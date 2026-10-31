@@ -9,7 +9,7 @@ let allPosts = [];
 let siteConfig = {};
 let pendingLocalDraftCount = 0;
 
-// Redirección automática de tokens de invitación/recuperación de Netlify Identity hacia /admin/
+// Redirección automática de tokens de invitación/recuperación de Netlify Identity hacia admin.html
 (function checkNetlifyIdentityRedirect() {
   const hash = window.location.hash || "";
   if (
@@ -18,7 +18,7 @@ let pendingLocalDraftCount = 0;
     hash.includes("recovery_token=") ||
     hash.includes("email_change_token=")
   ) {
-    window.location.replace("admin/index.html" + hash);
+    window.location.replace("admin.html" + hash);
   }
 })();
 

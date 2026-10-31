@@ -1310,96 +1310,326 @@ button, input, select, textarea {
 }
 
 .admin-main-wrap {
-  padding-top: 2.5rem;
+  padding-top: 2rem;
   padding-bottom: 4.5rem;
 }
 
-.admin-sync-card {
-  border-left: 3px solid var(--accent);
-}
-
-.admin-sync-title {
-  font-family: var(--font-serif);
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: var(--ink);
-  margin-bottom: 0.6rem;
-}
-
-.admin-sync-desc {
-  font-size: 0.94rem;
-  color: var(--ink-body);
-  line-height: 1.65;
-  max-width: 68ch;
-  margin-bottom: 1.5rem;
-}
-
-.admin-sync-actions {
+.admin-header-left,
+.admin-header-right {
   display: flex;
-  gap: 0.85rem;
-  flex-wrap: wrap;
   align-items: center;
-  margin-bottom: 1.5rem;
+  gap: 0.9rem;
+  flex-wrap: wrap;
 }
 
-.admin-sync-status {
-  font-size: 0.86rem;
-  font-weight: 600;
-  color: var(--forest);
-  margin-top: 0.75rem;
-}
-
-.admin-sync-status--error {
+.admin-badge-online {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--accent);
 }
 
-.admin-draft-list {
-  border-top: 1px solid var(--hairline);
-  margin-top: 1.25rem;
-}
-
-.admin-draft-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1.25rem;
-  padding: 1.25rem 0;
-  border-bottom: 1px solid var(--hairline);
-  flex-wrap: wrap;
-}
-
-.admin-draft-meta {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+.admin-user-email {
+  font-size: 0.78rem;
   color: var(--ink-muted);
-  margin-bottom: 0.3rem;
 }
 
-.admin-draft-name {
+.admin-intro-card {
+  border-left: 4px solid var(--accent);
+}
+
+.admin-section-title {
   font-family: var(--font-serif);
-  font-size: 1.15rem;
+  font-size: 1.32rem;
+  font-weight: 500;
   color: var(--ink);
   margin-bottom: 0.35rem;
 }
 
-.admin-draft-summary {
-  font-size: 0.88rem;
-  color: var(--ink-body);
-  max-width: 60ch;
+.admin-section-sub {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  line-height: 1.55;
 }
 
-.admin-draft-media {
-  font-size: 0.76rem;
-  color: var(--forest);
-  margin-top: 0.35rem;
-}
-
-.admin-draft-btns {
+.admin-head-flex {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.admin-urgent-grid {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.admin-check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.admin-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+.admin-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.admin-textarea-short {
+  min-height: 78px;
+}
+
+.admin-textarea-tall {
+  min-height: 135px;
+}
+
+.admin-hint {
+  font-size: 0.76rem;
+  color: var(--ink-muted);
+  margin-top: 0.35rem;
+  line-height: 1.45;
+}
+
+/* Selector de archivos táctil para móvil y escritorio */
+.admin-file-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  border: 1.5px dashed var(--hairline-strong);
+  background-color: var(--bg-stone);
+  color: var(--ink);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background-color 0.18s ease;
+}
+
+.admin-file-trigger:hover {
+  border-color: var(--ink);
+  background-color: #EAE8E1;
+}
+
+.admin-media-preview {
+  margin-top: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid var(--hairline);
+  background-color: var(--bg-stone);
+}
+
+.admin-preview-img {
+  width: 100%;
+  max-height: 190px;
+  object-fit: cover;
+  display: block;
+  margin-bottom: 0.6rem;
+  background-color: #121211;
+}
+
+.admin-preview-video {
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  display: block;
+  margin-bottom: 0.6rem;
+  background-color: #121211;
+}
+
+.admin-poster-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--hairline);
+}
+
+.admin-poster-thumb {
+  width: 64px;
+  height: 44px;
+  object-fit: cover;
+  border: 1px solid var(--hairline-strong);
+  flex-shrink: 0;
+}
+
+.admin-slider-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-slider-label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 0.2rem;
+}
+
+.admin-range-input {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.admin-preview-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
+  margin-top: 0.45rem;
+}
+
+.admin-preview-meta {
+  font-size: 0.74rem;
+  color: var(--ink-body);
+  word-break: break-all;
+}
+
+.admin-btn-small {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.68rem;
+}
+
+.admin-btn-danger {
+  color: var(--accent);
+}
+
+.admin-btn-full {
+  width: 100%;
+  text-align: center;
+  min-height: 48px;
+}
+
+.admin-submit-wrap {
+  margin-top: 1.5rem;
+}
+
+/* Barra de progreso de subida a la nube */
+.admin-progress-box {
+  margin-top: 1.15rem;
+  padding: 0.85rem 1rem;
+  background-color: var(--bg-stone);
+  border: 1px solid var(--hairline);
+}
+
+.admin-progress-track {
+  width: 100%;
+  height: 5px;
+  background-color: var(--hairline-strong);
+  overflow: hidden;
+  margin-bottom: 0.55rem;
+}
+
+.admin-progress-fill {
+  height: 100%;
+  width: 0%;
+  background-color: var(--forest);
+  transition: width 0.2s ease;
+}
+
+.admin-progress-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.admin-feedback-msg {
+  margin-top: 0.85rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  border-left: 3px solid var(--forest);
+  background-color: var(--bg-stone);
+  color: var(--forest);
+}
+
+.admin-feedback-msg--error {
+  border-left-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Tabla de publicaciones registradas */
+.admin-table-scroll {
+  overflow-x: auto;
+}
+
+.admin-table-date {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+}
+
+.admin-table-title {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.admin-media-tag {
+  display: inline-block;
+  margin-left: 0.45rem;
+  padding: 0.12rem 0.4rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--hairline-strong);
+  color: var(--ink-muted);
+  vertical-align: middle;
+}
+
+.admin-table-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.admin-table-empty {
+  text-align: center;
+  padding: 2rem;
+  color: var(--ink-muted);
+}
+
+.admin-count-badge {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+}
+
+.admin-auth-card {
+  max-width: 540px;
+  margin: 3rem auto;
+  border-left: 4px solid var(--accent);
+}
+
+.admin-auth-actions {
+  display: flex;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
 }
 
 /* --------------------------------------------------------------------------
@@ -1470,5 +1700,21 @@ button, input, select, textarea {
   .modal-topbar,
   .modal-body-scroll {
     padding-inline: 1.35rem;
+  }
+
+  .admin-card {
+    padding: 1.35rem;
+  }
+
+  .admin-urgent-grid,
+  .admin-two-col {
+    grid-template-columns: 1fr;
+  }
+
+  /* Evita zoom automático en iOS Safari al tocar campos de formulario en el celular */
+  .admin-form-input,
+  .admin-form-select,
+  .admin-form-textarea {
+    font-size: 1rem;
   }
 }

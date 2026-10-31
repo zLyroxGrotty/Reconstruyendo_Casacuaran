@@ -205,7 +205,7 @@ class DataStore {
   static async initFromRemoteOrLocal() {
     let remoteData = null;
     try {
-      const response = await fetch("./content/site-data.json", { cache: "no-cache" });
+      const response = await fetch(`./content/site-data.json?v=${Date.now()}`, { cache: "no-store" });
       if (response.ok) {
         remoteData = await response.json();
       }
@@ -214,25 +214,15 @@ class DataStore {
     }
 
     if (remoteData && remoteData.publications && Array.isArray(remoteData.publications)) {
-      const localOnlyPosts = this.getLocalOnlyDrafts(remoteData.publications).map(p => ({
-        ...p,
-        imageUrl: this.cleanMediaPath(p.imageUrl),
-        videoUrl: this.cleanMediaPath(p.videoUrl),
-        videoPoster: this.cleanMediaPath(p.videoPoster),
-        _isLocalDraft: true
-      }));
-
-      const mergedPosts = [...localOnlyPosts, ...remoteData.publications];
-      this.savePosts(mergedPosts);
-
+      this.savePosts(remoteData.publications);
       const mergedConfig = remoteData.config || this.getConfig();
       this.saveConfig(mergedConfig);
 
       return {
         config: mergedConfig,
-        publications: mergedPosts,
+        publications: remoteData.publications,
         remotePublications: remoteData.publications,
-        localDraftCount: localOnlyPosts.length
+        localDraftCount: 0
       };
     }
 

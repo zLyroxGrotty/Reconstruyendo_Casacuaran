@@ -58,5 +58,13 @@
   "Donativos_casacuaran.mp4": {
     "sha256": "8eeb47a09dd84b7282b7384c0b5223e32bc66506597288400904566d85832729",
     "size": 7599799
+  },
+  "Bienvenida_alcalde.jpg": {
+    "sha256": "e0fc35424d665f2d64d86b89b98ba3c9a5cb779655bea30f82b8c3a9dbc1820d",
+    "size": 228634
+  },
+  "Bienvenida_alcalde.webp": {
+    "sha256": "746230d4477ba7c47d7b775cfa889bf793674c0188041d9bb17daee871832a5c",
+    "size": 199544
   }
 }

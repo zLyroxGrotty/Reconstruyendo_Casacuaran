@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sincronización de Gestión | Reconstruyendo Casacuarán</title>
+  <title>Panel de Gestión | Reconstruyendo Casacuarán</title>
   <link rel="icon" type="image/svg+xml" href="assets/logo-mark.svg">
+  <link rel="preload" href="assets/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/public-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/styles.css">
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
@@ -12,47 +14,273 @@
 
   <header class="admin-masthead">
     <div class="container admin-action-row">
-      <a href="index.html" class="nav-admin-link">
-        &larr; Volver al Portal Público
-      </a>
-      <a href="admin/index.html" class="btn-primary-action">
-        Abrir Panel Oficial con Subida de Archivos &rarr;
-      </a>
+      <div class="admin-header-left">
+        <a href="index.html" class="nav-admin-link">
+          &larr; Volver a la Gaceta Pública
+        </a>
+        <span class="admin-badge-online">
+          Panel de Gestión en Línea
+        </span>
+      </div>
+
+      <div class="admin-header-right">
+        <span id="admin-user-email" class="admin-user-email" hidden></span>
+        <button type="button" id="btn-logout" class="btn-secondary-action admin-btn-small" hidden>
+          Cerrar Sesión
+        </button>
+      </div>
     </div>
   </header>
 
   <main class="container admin-main-wrap">
-    <section id="sync-panel" class="admin-card admin-sync-card" hidden>
-      <p class="eyebrow eyebrow--accent">Sincronización a la nube</p>
-      <h1 class="admin-sync-title">Publicar borradores guardados en este navegador</h1>
-      <p class="admin-sync-desc">
-        Estas publicaciones se escribieron en el editor local anterior y por ahora solo son visibles en este dispositivo. Pulsa el botón inferior para subirlas directamente al portal oficial (<strong>casacuaran.netlify.app</strong>) ordenadas por fecha y con su portada de video vinculada.
-      </p>
 
-      <div class="admin-sync-actions">
-        <button type="button" id="btn-publish-cloud" class="btn-primary-action">
-          Publicar ahora para todo el público &rarr;
+    <!-- Puerta de seguridad para cuentas autorizadas por invitación -->
+    <section id="auth-gate" class="admin-card admin-auth-card" hidden>
+      <p class="eyebrow eyebrow--accent">Acceso restringido</p>
+      <h1 class="admin-section-title">Administración de Reconstruyendo Casacuarán</h1>
+      <p class="admin-section-sub">
+        Este panel está protegido. Solo las personas con invitación de correo autorizada pueden publicar, editar o subir fotografías y videos al portal comunitario.
+      </p>
+      <div class="admin-auth-actions">
+        <button type="button" id="btn-open-login" class="btn-primary-action">
+          Iniciar Sesión
         </button>
-        <a href="admin/index.html" class="btn-secondary-action">
-          Ir al Panel con Selector de Fotos y Videos
+        <a href="index.html" class="btn-secondary-action">
+          Volver al Portal Público
         </a>
       </div>
-
-      <p id="sync-feedback" class="admin-sync-status" hidden></p>
-
-      <div id="drafts-container" class="admin-draft-list"></div>
     </section>
 
-    <section id="redirect-panel" class="admin-card">
-      <p class="eyebrow">Redirigiendo</p>
-      <h2 class="admin-sync-title">Abriendo el Panel de Gestión en Línea&hellip;</h2>
-      <p class="admin-sync-desc">
-        El panel oficial cuenta con botones directos para seleccionar fotografías y videos desde la galería de tu teléfono o computadora.
-      </p>
-      <a href="admin/index.html" class="btn-primary-action">
-        Continuar al Panel de Gestión &rarr;
-      </a>
-    </section>
+    <!-- Espacio de trabajo (visible únicamente con sesión autorizada) -->
+    <div id="admin-workspace" hidden>
+
+      <!-- Tarjeta informativa -->
+      <div class="admin-card admin-intro-card">
+        <h1 class="admin-section-title">Gestor de Contenido Comunitario</h1>
+        <p class="admin-section-sub">
+          Publica obras, faenas, historias y avisos directamente desde tu teléfono o computadora. Todo lo que guardes aquí se publica en línea para toda la comunidad, ordenado automáticamente por fecha.
+        </p>
+      </div>
+
+      <!-- 1. Aviso Urgente Superior -->
+      <section class="admin-card" aria-labelledby="heading-urgent">
+        <div class="admin-card-head">
+          <h2 id="heading-urgent" class="admin-section-title">Aviso Urgente (Cintillo Superior de la Web)</h2>
+          <p class="admin-section-sub">Texto breve para avisos de último minuto (jornadas de salud, asambleas, horarios o servicios).</p>
+        </div>
+
+        <form id="urgent-notice-form">
+          <div class="admin-urgent-grid">
+            <label class="admin-check-label">
+              <input type="checkbox" id="urgent-active" class="admin-checkbox">
+              <span>Mostrar aviso</span>
+            </label>
+
+            <input type="text"
+                   id="urgent-text"
+                   class="admin-form-input"
+                   placeholder="Escribe el aviso que aparecerá en la franja superior de la página..."
+                   aria-label="Mensaje del aviso urgente">
+
+            <button type="submit" id="btn-save-urgent" class="btn-primary-action">
+              Actualizar Aviso
+            </button>
+          </div>
+          <p id="urgent-feedback" class="admin-feedback-msg" hidden></p>
+        </form>
+      </section>
+
+      <!-- 2. Formulario de Nueva Publicación / Edición -->
+      <section id="form-container" class="admin-card" aria-labelledby="form-mode-title">
+        <div class="admin-card-head admin-head-flex">
+          <div>
+            <h2 id="form-mode-title" class="admin-section-title">Nueva Publicación</h2>
+            <p class="admin-section-sub">Registra una nueva historia, obra, faena, convocatoria o aviso oficial.</p>
+          </div>
+          <button type="button" id="btn-cancel-edit" class="btn-secondary-action admin-btn-small" hidden>
+            Cancelar Edición
+          </button>
+        </div>
+
+        <form id="post-form">
+          <div class="admin-form-grid">
+
+            <!-- Columna principal de redacción -->
+            <div>
+              <div class="admin-form-group">
+                <label for="post-title" class="admin-form-label">Título de la Publicación *</label>
+                <input type="text"
+                       id="post-title"
+                       class="admin-form-input"
+                       placeholder="Ej. Conclusión de trabajos en la red de drenaje"
+                       required>
+              </div>
+
+              <div class="admin-two-col">
+                <div class="admin-form-group">
+                  <label for="post-category" class="admin-form-label">Categoría *</label>
+                  <select id="post-category" class="admin-form-select" required>
+                    <option value="obras">Obras Públicas</option>
+                    <option value="faenas">Faenas Comunitarias</option>
+                    <option value="salud">Salud y Bienestar</option>
+                    <option value="cultura">Tradición y Cultura</option>
+                    <option value="avisos">Avisos Delegacionales</option>
+                  </select>
+                </div>
+
+                <div class="admin-form-group">
+                  <label for="post-date" class="admin-form-label">Fecha del Suceso *</label>
+                  <input type="date" id="post-date" class="admin-form-input" required>
+                </div>
+              </div>
+
+              <div class="admin-two-col">
+                <div class="admin-form-group">
+                  <label for="post-location" class="admin-form-label">Ubicación en Casacuarán</label>
+                  <input type="text"
+                         id="post-location"
+                         class="admin-form-input"
+                         placeholder="Ej. Jardín Principal, Domo, Calle Hidalgo">
+                </div>
+
+                <div class="admin-form-group">
+                  <label for="post-status" class="admin-form-label">Estatus</label>
+                  <select id="post-status" class="admin-form-select">
+                    <option value="completed">Concluida</option>
+                    <option value="in_progress">En ejecución / Convocatoria</option>
+                    <option value="upcoming">En preparación / Próximamente</option>
+                    <option value="notice">Aviso Oficial</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="admin-form-group">
+                <label for="post-summary" class="admin-form-label">Resumen Breve (para la tarjeta) *</label>
+                <textarea id="post-summary"
+                          class="admin-form-textarea admin-textarea-short"
+                          placeholder="Breve descripción de 1 o 2 frases que se lee en la tarjeta principal..."
+                          required></textarea>
+              </div>
+
+              <div class="admin-form-group">
+                <label for="post-content" class="admin-form-label">Contenido Detallado</label>
+                <textarea id="post-content"
+                          class="admin-form-textarea admin-textarea-tall"
+                          placeholder="Explicación completa de la actividad, programa, agradecimientos o instrucciones..."></textarea>
+              </div>
+            </div>
+
+            <!-- Columna lateral: Selección directa de Fotografía y Video desde teléfono o PC -->
+            <div>
+              <!-- Selector de Fotografía -->
+              <div class="admin-form-group">
+                <span class="admin-form-label">Fotografía (Opcional)</span>
+                <label for="post-image-file" class="admin-file-trigger">
+                  <span id="image-picker-label-text">+ Seleccionar fotografía del celular o PC</span>
+                </label>
+                <input type="file" id="post-image-file" accept="image/*" hidden>
+
+                <div id="image-preview-box" class="admin-media-preview" hidden>
+                  <img id="image-preview-el" src="" alt="Vista previa de fotografía" class="admin-preview-img">
+                  <div class="admin-preview-footer">
+                    <span id="image-preview-meta" class="admin-preview-meta"></span>
+                    <button type="button" id="btn-clear-image" class="btn-secondary-action admin-btn-small admin-btn-danger">
+                      Quitar foto
+                    </button>
+                  </div>
+                </div>
+
+                <p class="admin-hint">
+                  Si no subes foto ni video, la publicación se mostrará limpia en la sección de avisos.
+                </p>
+              </div>
+
+              <!-- Selector de Video -->
+              <div class="admin-form-group">
+                <span class="admin-form-label">Video (Opcional — MP4 o MOV)</span>
+                <label for="post-video-file" class="admin-file-trigger">
+                  <span id="video-picker-label-text">+ Seleccionar video del celular o PC</span>
+                </label>
+                <input type="file" id="post-video-file" accept="video/mp4,video/quicktime,video/webm,video/*" hidden>
+
+                <div id="video-preview-box" class="admin-media-preview" hidden>
+                  <video id="video-preview-el" controls playsinline muted preload="metadata" class="admin-preview-video"></video>
+
+                  <div id="poster-strip" class="admin-poster-strip" hidden>
+                    <img id="poster-preview-el" src="" alt="Portada automática del video" class="admin-poster-thumb">
+                    <div class="admin-slider-wrap">
+                      <label for="poster-seek-slider" class="admin-slider-label">Portada automática (desliza para elegir otro cuadro)</label>
+                      <input type="range" id="poster-seek-slider" class="admin-range-input" min="2" max="96" value="45">
+                    </div>
+                  </div>
+
+                  <div class="admin-preview-footer">
+                    <span id="video-preview-meta" class="admin-preview-meta"></span>
+                    <button type="button" id="btn-clear-video" class="btn-secondary-action admin-btn-small admin-btn-danger">
+                      Quitar video
+                    </button>
+                  </div>
+                </div>
+
+                <p class="admin-hint">
+                  La portada se genera automáticamente y el servidor comprime el video para que cargue rápido.
+                </p>
+              </div>
+
+              <!-- Enlace opcional a Facebook -->
+              <div class="admin-form-group">
+                <label for="post-facebook-url" class="admin-form-label">Enlace a Facebook (Opcional)</label>
+                <input type="url"
+                       id="post-facebook-url"
+                       class="admin-form-input"
+                       placeholder="https://www.facebook.com/...">
+              </div>
+
+              <!-- Progreso en tiempo real -->
+              <div id="publish-progress-box" class="admin-progress-box" hidden>
+                <div class="admin-progress-track">
+                  <div id="publish-progress-fill" class="admin-progress-fill"></div>
+                </div>
+                <p id="publish-progress-text" class="admin-progress-text">Preparando archivos...</p>
+              </div>
+
+              <p id="post-feedback" class="admin-feedback-msg" hidden></p>
+
+              <div class="admin-submit-wrap">
+                <button type="submit" id="btn-submit-post" class="btn-primary-action admin-btn-full">
+                  Publicar en el Portal
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </form>
+      </section>
+
+      <!-- 3. Tabla de Publicaciones Registradas en Línea -->
+      <section class="admin-card" aria-labelledby="heading-registered">
+        <div class="admin-card-head admin-head-flex">
+          <h2 id="heading-registered" class="admin-section-title">Publicaciones Registradas</h2>
+          <span id="posts-count-label" class="admin-count-badge">Cargando publicaciones...</span>
+        </div>
+
+        <div class="admin-table-scroll">
+          <table class="ledger-table">
+            <thead>
+              <tr>
+                <th scope="col">Fecha</th>
+                <th scope="col">Título</th>
+                <th scope="col">Categoría</th>
+                <th scope="col">Estatus</th>
+                <th scope="col" class="admin-table-actions">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="admin-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
   </main>
 
   <script src="js/data.js"></script>

@@ -26,11 +26,12 @@
       "statusLabel": "En ejecución",
       "summary": "Visita del alcalde kankakee, Ilinois, Estados Unidos",
       "content": "La Delegación Municipal Reconstruyendo Casacuarán invita cordialmente a toda la comunidad a participar en la recepción del alcalde de Kankakee, Illinois, Estados Unidos Christopher W. Curtis, y de nuestra presidenta municipal de Yuriria, Victoria Eugenia Ramírez Zavala.\n\n📅 Domingo 1 de noviembre de 2026\n\n📍 Domo del Jardín, Casacuarán\n\n🕙 Inicio: 10:00 a.m.\n\n📋 PROGRAMA DE ACTIVIDADES\n\n🕙 10:00 h | Recepción de autoridades.\n\n🎤 10:20 h | Acto protocolario de bienvenida.\n\n💃 10:40 h | Danza de Paloteros de Mujeres.\n\n✨ Será una ocasión especial para compartir nuestras tradiciones, fortalecer los lazos de amistad y mostrar la riqueza cultural de nuestra comunidad.\n\n¡Los esperamos para dar juntos una cálida bienvenida a nuestros visitantes! 🇲🇽❤️🇺🇸\n\nDelegación Municipal Reconstruyendo Casacuarán",
-      "imageUrl": "https://scontent.fbjx4-1.fna.fbcdn.net/v/t39.30808-6/868445903_122193556994635646_1773980636073235302_n.jpg?stp=dst-jpg_tt6&cstp=mx1199x1312&ctp=s1199x1312&_nc_cat=103&_nc_map=urlgen_bucketless&ccb=1-7&_nc_sid=833d8c&_nc_ohc=b5OuooCELqIQ7kNvwEETmqh&_nc_oc=AdrEXvuRqpSAmJ2-P_y1GHt00yckwxYsq5mwSh8Qj6KrMUV6YUzbcEQkVYAFf2lmbE4&_nc_zt=23&_nc_ht=scontent.fbjx4-1.fna&_nc_gid=4jDsTNRCWxhK3Rjv1eR89Q&_nc_ss=7b289&oh=00_AQR-hEXF6iZ63Xus7ix7j9Kh9WcDRDuubgJTO5HZGyW9sA&oe=6AEC05EA",
+      "imageUrl": "IMG/Bienvenida_alcalde.webp",
       "imagePending": false,
       "location": "Domo del Jardín, Casacuarán",
       "facebookUrl": "https://www.facebook.com/photo/?fbid=122193556988635646&set=a.122093302592635646",
-      "featured": false
+      "featured": false,
+      "imageFallback": "IMG/Bienvenida_alcalde.jpg"
     },
     {
       "id": 7,
