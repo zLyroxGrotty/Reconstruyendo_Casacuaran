@@ -7,6 +7,7 @@ let currentCategory = "todas";
 let currentSearch = "";
 let allPosts = [];
 let siteConfig = {};
+let pendingLocalDraftCount = 0;
 
 // Redirección automática de tokens de invitación/recuperación de Netlify Identity hacia /admin/
 (function checkNetlifyIdentityRedirect() {
@@ -28,8 +29,10 @@ document.addEventListener("DOMContentLoaded", () => {
 async function initPortal() {
   const data = await DataStore.initFromRemoteOrLocal();
   siteConfig = data.config || DataStore.getConfig();
+  pendingLocalDraftCount = Number(data.localDraftCount || 0);
   allPosts = normalizePublications(data.publications || DataStore.getPosts());
 
+  renderLocalSyncBanner();
   renderUrgentBanner();
   renderStats();
   renderPublications();
@@ -44,7 +47,26 @@ async function initPortal() {
 }
 
 /**
- * Normaliza entradas creadas desde Decap CMS (asigna ID único, etiquetas y rutas limpias)
+ * Convierte fecha YYYY-MM-DD (o ISO) a timestamp UTC para ordenamiento cronológico estricto
+ */
+function parseDateTimestamp(dateValue) {
+  if (!dateValue) return 0;
+  const clean = String(dateValue).trim().split("T")[0];
+  const parts = clean.split("-");
+  if (parts.length === 3) {
+    const y = Number(parts[0]);
+    const m = Number(parts[1]) - 1;
+    const d = Number(parts[2]);
+    const ts = Date.UTC(y, m, d);
+    if (!Number.isNaN(ts)) return ts;
+  }
+  const fallback = Date.parse(String(dateValue));
+  return Number.isNaN(fallback) ? 0 : fallback;
+}
+
+/**
+ * Normaliza entradas (asigna ID único, limpia rutas multimedia, infiere portada de video
+ * y ordena cronológicamente de la fecha más reciente a la más antigua)
  */
 function normalizePublications(posts) {
   if (!Array.isArray(posts)) return [];
@@ -65,10 +87,10 @@ function normalizePublications(posts) {
   };
 
   const usedIds = new Set();
-  const cleanPath = (val) => (typeof val === "string" ? val.trim().replace(/^\/+/, "") : "");
+  const cleanPath = (val) => DataStore.cleanMediaPath(val);
 
-  return posts.map((raw, idx) => {
-    const post = { ...raw };
+  const normalized = posts.map((raw, idx) => {
+    const post = { ...raw, _origIndex: idx };
     let candidateId = Number(post.id);
     if (!candidateId || usedIds.has(candidateId)) {
       candidateId = idx + 1;
@@ -80,8 +102,17 @@ function normalizePublications(posts) {
     post.imageUrl = cleanPath(post.imageUrl);
     post.imageFallback = cleanPath(post.imageFallback);
     post.videoUrl = cleanPath(post.videoUrl);
+    if (/\.(mp4|mov|m4v|webm)$/i.test(post.imageUrl) && !post.videoUrl) {
+      post.videoUrl = post.imageUrl;
+      post.imageUrl = "";
+    }
     post.videoFallbackUrl = cleanPath(post.videoFallbackUrl);
     post.videoPoster = cleanPath(post.videoPoster);
+    post._inferredPoster = post.videoPoster || DataStore.inferVideoPoster(post.videoUrl);
+
+    if (post.imageUrl) {
+      post.imagePending = false;
+    }
 
     if (!post.categoryLabel) {
       post.categoryLabel = categoryLabels[post.category] || "Comunidad";
@@ -91,6 +122,48 @@ function normalizePublications(posts) {
     }
     return post;
   });
+
+  // Ordenamiento cronológico descendente: la fecha más reciente siempre aparece primero
+  normalized.sort((a, b) => {
+    const diff = parseDateTimestamp(b.date) - parseDateTimestamp(a.date);
+    if (diff !== 0) return diff;
+    return a._origIndex - b._origIndex;
+  });
+
+  return normalized;
+}
+
+/**
+ * Cintillo de sincronización cuando existen borradores guardados solo en el navegador local
+ */
+function renderLocalSyncBanner() {
+  const banner = document.getElementById("local-sync-banner");
+  if (!banner) return;
+
+  const isWebHost = window.location.protocol === "https:" || window.location.protocol === "http:";
+  if (isWebHost && pendingLocalDraftCount > 0) {
+    const plural = pendingLocalDraftCount === 1
+      ? "1 publicación guardada solo en este navegador"
+      : `${pendingLocalDraftCount} publicaciones guardadas solo en este navegador`;
+
+    banner.hidden = false;
+    banner.innerHTML = `
+      <div class="container urgent-bar-inner">
+        <div class="urgent-bar-lead">
+          <span class="urgent-bar-badge">Borrador Local</span>
+          <span class="urgent-bar-text">Tienes ${escapeHtml(plural)}. Publícalas en la nube para que todos puedan verlas.</span>
+        </div>
+        <div class="urgent-bar-actions">
+          <a href="admin.html?sync=1" class="urgent-bar-link">
+            Publicar en línea ahora &rarr;
+          </a>
+        </div>
+      </div>
+    `;
+  } else {
+    banner.hidden = true;
+    banner.innerHTML = "";
+  }
 }
 
 /**
@@ -188,36 +261,42 @@ function renderPublications() {
     galleryEl.hidden = false;
     galleryEl.innerHTML = visualPosts.map(post => {
       const formattedDate = formatDate(post.date);
-      const posterOrImage = post.videoUrl
+      const explicitPosterOrImage = post.videoUrl
         ? (post.videoPoster || (!post.imagePending ? post.imageUrl : ""))
         : post.imageUrl;
-      const fallbackImg = post.imageFallback || posterOrImage;
+      const fallbackImg = post.imageFallback || explicitPosterOrImage;
       const whatsappHref = buildWhatsAppLink(post);
 
       let cardMediaHtml = "";
-      if (posterOrImage) {
-        const isWebp = posterOrImage.toLowerCase().endsWith(".webp");
+      if (explicitPosterOrImage) {
+        const encodedMain = encodeMediaUrl(explicitPosterOrImage);
+        const encodedFallback = encodeMediaUrl(fallbackImg);
+        const isWebp = explicitPosterOrImage.toLowerCase().endsWith(".webp");
         cardMediaHtml = isWebp ? `
           <picture>
-            <source srcset="${escapeHtml(posterOrImage)}" type="image/webp">
-            <img src="${escapeHtml(fallbackImg)}"
+            <source srcset="${escapeHtml(encodedMain)}" type="image/webp">
+            <img src="${escapeHtml(encodedFallback)}"
                  alt="${escapeHtml(post.title)}"
                  class="story-media-img"
                  loading="lazy">
           </picture>
         ` : `
-          <img src="${escapeHtml(posterOrImage)}"
+          <img src="${escapeHtml(encodedMain)}"
                alt="${escapeHtml(post.title)}"
                class="story-media-img"
                loading="lazy">
         `;
       } else if (post.videoUrl) {
+        const encodedVid = encodeMediaUrl(post.videoUrl);
+        const posterAttr = post._inferredPoster
+          ? ` poster="${escapeHtml(encodeMediaUrl(post._inferredPoster))}"`
+          : "";
         cardMediaHtml = `
-          <video src="${escapeHtml(post.videoUrl)}#t=0.8"
+          <video src="${escapeHtml(encodedVid)}#t=0.8"${posterAttr}
                  preload="metadata"
                  muted
                  playsinline
-                 class="story-media-img"
+                 class="story-media-img story-video-thumb"
                  aria-hidden="true"></video>
         `;
       }
@@ -253,6 +332,8 @@ function renderPublications() {
         </article>
       `;
     }).join("");
+
+    hydrateVideoThumbnails(galleryEl);
   } else {
     galleryEl.innerHTML = "";
     galleryEl.hidden = true;
@@ -304,7 +385,20 @@ function renderPublications() {
 }
 
 /**
- * 4. Registro abierto de obras y faenas
+ * Asegura que los videos sin portada explícita muestren un fotograma válido en móvil y escritorio
+ */
+function hydrateVideoThumbnails(container) {
+  container.querySelectorAll("video.story-video-thumb").forEach(vid => {
+    vid.addEventListener("loadedmetadata", () => {
+      if (vid.duration && vid.currentTime === 0) {
+        vid.currentTime = Math.min(1.0, vid.duration * 0.25);
+      }
+    }, { once: true });
+  });
+}
+
+/**
+ * 4. Registro abierto de obras y faenas (ordenado cronológicamente a través de allPosts)
  */
 function renderWorksTable() {
   const tbody = document.getElementById("obras-tbody");
@@ -486,26 +580,33 @@ function openPostModal(id) {
 
   let mediaHtml = "";
   if (post.videoUrl) {
-    const posterAttr = post.videoPoster ? ` poster="${escapeHtml(post.videoPoster)}"` : "";
+    const posterPath = post.videoPoster || post._inferredPoster || "";
+    const posterAttr = posterPath ? ` poster="${escapeHtml(encodeMediaUrl(posterPath))}"` : "";
+    const mainVideoSrc = encodeMediaUrl(post.videoUrl);
+    const mainTypeAttr = inferVideoMimeAttr(post.videoUrl);
+    const fallbackTypeAttr = post.videoFallbackUrl ? inferVideoMimeAttr(post.videoFallbackUrl) : "";
+
     mediaHtml = `
       <div class="modal-media">
         <video controls preload="metadata" playsinline${posterAttr} aria-label="Video: ${escapeHtml(post.title)}">
-          <source src="${escapeHtml(post.videoUrl)}" type="video/mp4">
-          ${post.videoFallbackUrl ? `<source src="${escapeHtml(post.videoFallbackUrl)}" type="video/mp4">` : ""}
+          <source src="${escapeHtml(mainVideoSrc)}"${mainTypeAttr}>
+          ${post.videoFallbackUrl ? `<source src="${escapeHtml(encodeMediaUrl(post.videoFallbackUrl))}"${fallbackTypeAttr}>` : ""}
         </video>
       </div>
     `;
   } else if (post.imageUrl && !post.imagePending) {
+    const encodedImg = encodeMediaUrl(post.imageUrl);
+    const encodedFallback = encodeMediaUrl(post.imageFallback || post.imageUrl);
     const isWebp = post.imageUrl.toLowerCase().endsWith(".webp");
     mediaHtml = `
       <div class="modal-media">
         ${isWebp ? `
           <picture>
-            <source srcset="${escapeHtml(post.imageUrl)}" type="image/webp">
-            <img src="${escapeHtml(post.imageFallback || post.imageUrl)}" alt="${escapeHtml(post.title)}">
+            <source srcset="${escapeHtml(encodedImg)}" type="image/webp">
+            <img src="${escapeHtml(encodedFallback)}" alt="${escapeHtml(post.title)}">
           </picture>
         ` : `
-          <img src="${escapeHtml(post.imageUrl)}" alt="${escapeHtml(post.title)}">
+          <img src="${escapeHtml(encodedImg)}" alt="${escapeHtml(post.title)}">
         `}
       </div>
     `;
@@ -571,6 +672,22 @@ function setupModalEvents() {
 /**
  * Helpers
  */
+function encodeMediaUrl(url) {
+  if (!url) return "";
+  try {
+    return encodeURI(decodeURI(url));
+  } catch (e) {
+    return encodeURI(url);
+  }
+}
+
+function inferVideoMimeAttr(url) {
+  const lower = String(url || "").toLowerCase();
+  if (lower.endsWith(".webm")) return ' type="video/webm"';
+  if (lower.endsWith(".mp4") || lower.endsWith(".m4v")) return ' type="video/mp4"';
+  return "";
+}
+
 function buildWhatsAppLink(post) {
   const url = window.location.href.split("#")[0];
   const message = `${post.title} — San Pablo Casacuarán: ${url}`;

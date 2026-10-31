@@ -41,7 +41,9 @@ collections:
             label: "Publicaciones, Obras y Comunicados"
             label_singular: "Publicación"
             widget: "list"
-            summary: "{{fields.title}} — {{fields.date}}"
+            collapsed: true
+            add_to_top: true
+            summary: "{{fields.date}} — {{fields.title}}"
             fields:
               - { name: "title", label: "Título de la publicación", widget: "string" }
               - name: "category"
@@ -54,7 +56,7 @@ collections:
                   - { label: "Salud y Bienestar", value: "salud" }
                   - { label: "Tradición y Cultura", value: "cultura" }
                   - { label: "Avisos Delegacionales", value: "avisos" }
-              - { name: "date", label: "Fecha", widget: "datetime", format: "YYYY-MM-DD", time_format: false }
+              - { name: "date", label: "Fecha del suceso (el portal ordena automáticamente por esta fecha)", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
               - name: "status"
                 label: "Estado"
                 widget: "select"
@@ -64,17 +66,17 @@ collections:
                   - { label: "En ejecución / Convocatoria abierta", value: "in_progress" }
                   - { label: "En preparación / Próximamente", value: "upcoming" }
                   - { label: "Aviso Oficial", value: "notice" }
-              - { name: "location", label: "Ubicación en Casacuarán", widget: "string", required: false, hint: "Ej. Jardín Principal, Casa de Cultura, Calle Principal" }
+              - { name: "imageUrl", label: "Fotografía (Seleccionar archivo de tu celular o PC)", widget: "image", required: false, hint: "Toca 'Elige una imagen' y luego 'Subir' para abrir la galería de tu teléfono o archivos. Se optimiza sola a WebP." }
+              - { name: "videoUrl", label: "Video MP4 / MOV (Seleccionar archivo de tu celular o PC)", widget: "file", required: false, hint: "Toca 'Elige un archivo' y luego 'Subir' para seleccionar el video desde tu teléfono o computadora. Se comprime y genera su portada automáticamente." }
+              - { name: "videoPoster", label: "Portada personalizada del video (Opcional)", widget: "image", required: false, hint: "Déjalo vacío para que el sistema genere automáticamente la portada a partir del video." }
               - { name: "summary", label: "Resumen breve (1 o 2 frases para la tarjeta)", widget: "text" }
               - { name: "content", label: "Texto completo del comunicado", widget: "text" }
-              - { name: "imageUrl", label: "Fotografía (se optimiza a WebP automáticamente)", widget: "image", required: false }
-              - { name: "videoUrl", label: "Video MP4/MOV (se comprime automáticamente al publicar)", widget: "file", required: false, hint: "Sube tu video directo desde tu celular o PC; el servidor lo comprimirá y generará su portada automáticamente." }
-              - { name: "videoPoster", label: "Portada personalizada del video (opcional)", widget: "image", required: false, hint: "Déjalo vacío para que el sistema extraiga un fotograma automáticamente." }
-              - { name: "facebookUrl", label: "Enlace a publicación en Facebook (opcional)", widget: "string", required: false }
+              - { name: "location", label: "Ubicación en Casacuarán (Opcional)", widget: "string", required: false, hint: "Ej. Jardín Principal, Casa de Cultura, Calle Principal" }
+              - { name: "facebookUrl", label: "Enlace a publicación en Facebook (Opcional)", widget: "string", required: false }
               - { name: "featured", label: "Destacada", widget: "boolean", default: false, required: false }
-              - { name: "id", label: "ID interno (opcional, automático)", widget: "number", required: false }
-              - { name: "categoryLabel", label: "Etiqueta personalizada de categoría (opcional)", widget: "string", required: false }
-              - { name: "statusLabel", label: "Etiqueta personalizada de estado (opcional)", widget: "string", required: false }
-              - { name: "imageFallback", label: "Imagen JPG de respaldo (automático)", widget: "image", required: false }
-              - { name: "videoFallbackUrl", label: "Video alternativo ligero (opcional)", widget: "file", required: false }
-              - { name: "imagePending", label: "Sin fotografía (mostrar en lista de avisos)", widget: "boolean", default: false, required: false }
+              - { name: "id", label: "ID interno", widget: "hidden", required: false }
+              - { name: "categoryLabel", label: "Etiqueta categoría", widget: "hidden", required: false }
+              - { name: "statusLabel", label: "Etiqueta estado", widget: "hidden", required: false }
+              - { name: "imageFallback", label: "Respaldo JPG", widget: "hidden", required: false }
+              - { name: "videoFallbackUrl", label: "Respaldo Video", widget: "hidden", required: false }
+              - { name: "imagePending", label: "Sin imagen", widget: "hidden", required: false }

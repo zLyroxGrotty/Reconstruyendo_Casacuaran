@@ -127,7 +127,82 @@ class DataStore {
   static STORAGE_KEY_POSTS = "casacuaran_publicaciones_v3";
   static STORAGE_KEY_CONFIG = "casacuaran_config_v3";
 
-  static async initFromRemoteOrLocal({ preferLocalDrafts = false } = {}) {
+  /**
+   * Normaliza rutas de imagen/video incluso si se pegó una ruta local de Windows (C:\...\archivo.mp4)
+   * o solo el nombre del archivo (Donativos_casacuaran.mp4).
+   */
+  static cleanMediaPath(val) {
+    if (typeof val !== "string") return "";
+    let cleaned = val.trim().replace(/^["']+|["']+$/g, "");
+    if (!cleaned) return "";
+
+    if (/^(https?:\/\/|data:|blob:)/i.test(cleaned)) {
+      return cleaned;
+    }
+
+    cleaned = cleaned.replace(/\\/g, "/");
+
+    // Si es una ruta local de sistema operativo (C:/..., fakepath/..., _originales_sin_comprimir/...)
+    if (
+      /^[a-zA-Z]:\//.test(cleaned) ||
+      /fakepath\//i.test(cleaned) ||
+      /_originales_sin_comprimir\//i.test(cleaned) ||
+      /^\/Users\//i.test(cleaned)
+    ) {
+      const baseName = cleaned.split("/").filter(Boolean).pop() || "";
+      return baseName ? `IMG/${baseName}` : "";
+    }
+
+    cleaned = cleaned.replace(/^\.?\//, "").replace(/^\/+/, "");
+
+    if (!cleaned.includes("/")) {
+      return `IMG/${cleaned}`;
+    }
+
+    return cleaned;
+  }
+
+  /**
+   * Infiere la portada WebP automática de un video en IMG/
+   */
+  static inferVideoPoster(videoUrl) {
+    const cleanVid = this.cleanMediaPath(videoUrl);
+    if (!cleanVid || /^(https?:\/\/|data:|blob:)/i.test(cleanVid)) return "";
+    if (!/\.(mp4|mov|m4v|webm)$/i.test(cleanVid)) return "";
+    return cleanVid.replace(/(-web)?\.(mp4|mov|m4v|webm)$/i, "-poster.webp");
+  }
+
+  static makePostSignature(post) {
+    if (!post) return "";
+    const title = String(post.title || "").trim().toLowerCase();
+    const date = String(post.date || "").trim().split("T")[0];
+    return `${title}::${date}`;
+  }
+
+  /**
+   * Detecta publicaciones creadas únicamente en el navegador local que aún no existen en content/site-data.json
+   */
+  static getLocalOnlyDrafts(remotePublications) {
+    if (!Array.isArray(remotePublications)) return [];
+    const localPosts = this.getPosts();
+    const remoteIds = new Set(
+      remotePublications.map(p => Number(p && p.id)).filter(n => !Number.isNaN(n) && n > 0)
+    );
+    const remoteSignatures = new Set(
+      remotePublications.map(p => this.makePostSignature(p)).filter(Boolean)
+    );
+
+    return localPosts.filter(p => {
+      if (!p || !p.title) return false;
+      const numId = Number(p.id);
+      const sig = this.makePostSignature(p);
+      if (numId && remoteIds.has(numId)) return false;
+      if (sig && remoteSignatures.has(sig)) return false;
+      return true;
+    });
+  }
+
+  static async initFromRemoteOrLocal() {
     let remoteData = null;
     try {
       const response = await fetch("./content/site-data.json", { cache: "no-cache" });
@@ -139,25 +214,34 @@ class DataStore {
     }
 
     if (remoteData && remoteData.publications && Array.isArray(remoteData.publications)) {
-      const localPosts = this.getPosts();
-      const remoteIds = new Set(remoteData.publications.map(p => Number(p.id)));
+      const localOnlyPosts = this.getLocalOnlyDrafts(remoteData.publications).map(p => ({
+        ...p,
+        imageUrl: this.cleanMediaPath(p.imageUrl),
+        videoUrl: this.cleanMediaPath(p.videoUrl),
+        videoPoster: this.cleanMediaPath(p.videoPoster),
+        _isLocalDraft: true
+      }));
 
-      // Conservar cualquier publicación agregada localmente cuyo ID no esté en el archivo remoto
-      const localOnlyPosts = localPosts.filter(p => p && p.id && !remoteIds.has(Number(p.id)));
-
-      // Las publicaciones locales van primero para verse de inmediato en la gaceta
       const mergedPosts = [...localOnlyPosts, ...remoteData.publications];
       this.savePosts(mergedPosts);
 
       const mergedConfig = remoteData.config || this.getConfig();
-      if (!localStorage.getItem(this.STORAGE_KEY_CONFIG)) {
-        this.saveConfig(mergedConfig);
-      }
+      this.saveConfig(mergedConfig);
 
-      return { config: this.getConfig(), publications: mergedPosts };
+      return {
+        config: mergedConfig,
+        publications: mergedPosts,
+        remotePublications: remoteData.publications,
+        localDraftCount: localOnlyPosts.length
+      };
     }
 
-    return { config: this.getConfig(), publications: this.getPosts() };
+    return {
+      config: this.getConfig(),
+      publications: this.getPosts(),
+      remotePublications: null,
+      localDraftCount: 0
+    };
   }
 
   static getPosts() {
@@ -223,9 +307,15 @@ class DataStore {
 
   static deletePost(id) {
     let posts = this.getPosts();
-    posts = posts.filter(p => p.id !== id);
+    posts = posts.filter(p => Number(p.id) !== Number(id));
     this.savePosts(posts);
     return true;
+  }
+
+  static clearLocalDrafts(remotePublications) {
+    if (Array.isArray(remotePublications)) {
+      this.savePosts(remotePublications);
+    }
   }
 
   static resetToDefaults() {

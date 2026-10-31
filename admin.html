@@ -3,210 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel de Edición Local | Reconstruyendo Casacuarán</title>
+  <title>Sincronización de Gestión | Reconstruyendo Casacuarán</title>
   <link rel="icon" type="image/svg+xml" href="assets/logo-mark.svg">
   <link rel="stylesheet" href="css/styles.css">
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
-<body style="background-color: var(--cal);">
+<body class="admin-page-body">
 
   <header class="admin-masthead">
     <div class="container admin-action-row">
-      <div style="display: flex; align-items: center; gap: 1rem;">
-        <a href="index.html" class="nav-admin-link">
-          &larr; Volver a la Gaceta Pública
-        </a>
-        <span style="font-size: 0.85rem; font-weight: 800; text-transform: uppercase; color: var(--almagre);">
-          Editor Local (site-data.json)
-        </span>
-      </div>
-
-      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-        <a href="admin/index.html" class="btn-secondary-action" style="font-size: 0.78rem;">
-          Ir a Decap CMS (En Línea) &rarr;
-        </a>
-        <button type="button" id="btn-quick-download" class="btn-primary-action" style="font-size: 0.78rem;">
-          Descargar site-data.json
-        </button>
-      </div>
+      <a href="index.html" class="nav-admin-link">
+        &larr; Volver al Portal Público
+      </a>
+      <a href="admin/index.html" class="btn-primary-action">
+        Abrir Panel Oficial con Subida de Archivos &rarr;
+      </a>
     </div>
   </header>
 
-  <main class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
-
-    <!-- Tarjeta informativa de flujo de trabajo -->
-    <div class="admin-card" style="border-left: 4px solid var(--almagre);">
-      <h2 class="font-serif" style="font-size: 1.3rem; margin-bottom: 0.5rem;">Gestor de Contenido Comunitario</h2>
-      <p style="font-size: 0.88rem; color: var(--tinta-suave); line-height: 1.6;">
-        Este panel edita la estructura de <code>content/site-data.json</code> directamente en tu navegador. Al terminar de redactar o actualizar tus avisos, pulsa <strong>"Descargar site-data.json"</strong> y reemplaza el archivo en la carpeta <code>content/</code> de tu proyecto.
-      </p>
-    </div>
-
-    <!-- 1. Aviso Urgente Superior -->
-    <section class="admin-card">
-      <div class="admin-card-head">
-        <h3 class="font-serif" style="font-size: 1.25rem;">Aviso Urgente (Cintillo Superior de la Web)</h3>
-        <p style="font-size: 0.82rem; color: var(--tinta-muda);">Texto breve para avisos de último minuto (jornadas de salud, reuniones, cortes de agua).</p>
-      </div>
-
-      <form id="urgent-notice-form">
-        <div style="display: grid; grid-template-columns: auto 1fr auto; gap: 1rem; align-items: center; flex-wrap: wrap;">
-          <label style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; cursor: pointer;">
-            <input type="checkbox" id="urgent-active" style="width: 18px; height: 18px; accent-color: var(--almagre);">
-            <span>Mostrar aviso</span>
-          </label>
-
-          <input type="text" id="urgent-text" class="admin-form-input" placeholder="Escribe el aviso que aparecerá en la franja roja superior..." required>
-
-          <button type="submit" class="btn-primary-action">
-            Actualizar Aviso
-          </button>
-        </div>
-      </form>
-    </section>
-
-    <!-- 2. Formulario de Publicación -->
-    <section id="form-container" class="admin-card">
-      <div class="admin-card-head" style="display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <h3 id="form-mode-title" class="font-serif" style="font-size: 1.3rem;">Nueva Publicación</h3>
-          <p style="font-size: 0.82rem; color: var(--tinta-muda);">Registra una nueva obra, faena, convocatoria de salud o aviso oficial.</p>
-        </div>
-        <button type="button" id="btn-cancel-edit" class="btn-secondary-action" style="display: none; font-size: 0.75rem;">
-          Cancelar Edición
-        </button>
-      </div>
-
-      <form id="post-form">
-        <div class="admin-form-grid">
-          
-          <!-- Columna principal de redacción -->
-          <div>
-            <div class="admin-form-group">
-              <label for="post-title" class="admin-form-label">Título de la Publicación *</label>
-              <input type="text" id="post-title" class="admin-form-input" placeholder="Ej. Conclusión de trabajos en la red de drenaje" required>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-              <div class="admin-form-group">
-                <label for="post-category" class="admin-form-label">Categoría *</label>
-                <select id="post-category" class="admin-form-select" required>
-                  <option value="obras">Obras Públicas</option>
-                  <option value="faenas">Faenas Comunitarias</option>
-                  <option value="salud">Salud y Bienestar</option>
-                  <option value="cultura">Tradición y Cultura</option>
-                  <option value="avisos">Avisos Delegacionales</option>
-                </select>
-              </div>
-
-              <div class="admin-form-group">
-                <label for="post-date" class="admin-form-label">Fecha del Suceso *</label>
-                <input type="date" id="post-date" class="admin-form-input" required>
-              </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-              <div class="admin-form-group">
-                <label for="post-location" class="admin-form-label">Ubicación en Casacuarán</label>
-                <input type="text" id="post-location" class="admin-form-input" placeholder="Ej. Jardín Principal, Calle Hidalgo">
-              </div>
-
-              <div class="admin-form-group">
-                <label for="post-status" class="admin-form-label">Estatus</label>
-                <select id="post-status" class="admin-form-select">
-                  <option value="completed">Concluida</option>
-                  <option value="in_progress">En ejecución / Convocatoria</option>
-                  <option value="upcoming">En preparación / Próximamente</option>
-                  <option value="notice">Aviso Oficial</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="admin-form-group">
-              <label for="post-summary" class="admin-form-label">Resumen Breve (para el tablero) *</label>
-              <textarea id="post-summary" class="admin-form-textarea" style="min-height: 70px;" placeholder="Breve descripción que se lee en el tablero..." required></textarea>
-            </div>
-
-            <div class="admin-form-group">
-              <label for="post-content" class="admin-form-label">Contenido Detallado</label>
-              <textarea id="post-content" class="admin-form-textarea" style="min-height: 120px;" placeholder="Explicación completa de la obra, agradecimientos, acuerdos o instrucciones..."></textarea>
-            </div>
-          </div>
-
-          <!-- Columna lateral: enlaces y multimedia -->
-          <div>
-            <div class="admin-form-group">
-              <label for="post-image-url" class="admin-form-label">Ruta o URL de Imagen</label>
-              <input type="text" id="post-image-url" class="admin-form-input" placeholder="IMG/Faena.webp o enlace">
-              <div style="font-size: 0.75rem; color: var(--tinta-muda); margin-top: 0.25rem;">Si no hay foto disponible, deja el campo vacío y la gaceta mostrará una ficha tipográfica limpia.</div>
-            </div>
-
-            <div class="admin-form-group">
-              <label for="post-video-url" class="admin-form-label">Ruta de Video (Opcional)</label>
-              <input type="text" id="post-video-url" class="admin-form-input" placeholder="IMG/Fiesta-web.mp4">
-            </div>
-
-            <div class="admin-form-group">
-              <label for="post-facebook-url" class="admin-form-label">Enlace a Facebook (Opcional)</label>
-              <input type="url" id="post-facebook-url" class="admin-form-input" placeholder="https://www.facebook.com/...">
-            </div>
-
-            <div style="margin-top: 2rem;">
-              <button type="submit" id="btn-submit-post" class="btn-primary-action" style="width: 100%; text-align: center;">
-                Guardar Publicación
-              </button>
-            </div>
-          </div>
-
-        </div>
-      </form>
-    </section>
-
-    <!-- 3. Tabla de Publicaciones Registradas -->
-    <section class="admin-card">
-      <div class="admin-card-head" style="display: flex; justify-content: space-between; align-items: center;">
-        <h3 class="font-serif" style="font-size: 1.25rem;">Publicaciones Registradas</h3>
-        <span id="posts-count-label" style="font-size: 0.8rem; font-weight: 700; color: var(--tinta-muda);">Cargando...</span>
-      </div>
-
-      <div style="overflow-x: auto;">
-        <table class="ledger-table" style="background-color: #FFFFFF;">
-          <thead>
-            <tr>
-              <th scope="col">Fecha</th>
-              <th scope="col">Título</th>
-              <th scope="col">Categoría</th>
-              <th scope="col">Estatus</th>
-              <th scope="col" style="text-align: right;">Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="admin-tbody"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- 4. Respaldo y Descarga de Datos -->
-    <section class="admin-card" style="background-color: var(--piedra);">
-      <h3 class="font-serif" style="font-size: 1.2rem; margin-bottom: 0.5rem;">Descarga y Copia de Seguridad</h3>
-      <p style="font-size: 0.82rem; color: var(--tinta-suave); margin-bottom: 1.25rem;">
-        Exporta el archivo JSON actualizado para guardar en <code>content/site-data.json</code> o restaura una copia anterior.
+  <main class="container admin-main-wrap">
+    <section id="sync-panel" class="admin-card admin-sync-card" hidden>
+      <p class="eyebrow eyebrow--accent">Sincronización a la nube</p>
+      <h1 class="admin-sync-title">Publicar borradores guardados en este navegador</h1>
+      <p class="admin-sync-desc">
+        Estas publicaciones se escribieron en el editor local anterior y por ahora solo son visibles en este dispositivo. Pulsa el botón inferior para subirlas directamente al portal oficial (<strong>casacuaran.netlify.app</strong>) ordenadas por fecha y con su portada de video vinculada.
       </p>
 
-      <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
-        <button type="button" id="btn-export-json" class="btn-primary-action">
-          Descargar site-data.json
+      <div class="admin-sync-actions">
+        <button type="button" id="btn-publish-cloud" class="btn-primary-action">
+          Publicar ahora para todo el público &rarr;
         </button>
-
-        <label class="btn-secondary-action" style="cursor: pointer;">
-          Cargar archivo site-data.json
-          <input type="file" id="import-json-file" accept=".json" style="display: none;">
-        </label>
-
-        <button type="button" id="btn-reset-demo" class="btn-secondary-action" style="color: var(--guardapolvo); margin-left: auto;">
-          Restablecer Valores Iniciales
-        </button>
+        <a href="admin/index.html" class="btn-secondary-action">
+          Ir al Panel con Selector de Fotos y Videos
+        </a>
       </div>
+
+      <p id="sync-feedback" class="admin-sync-status" hidden></p>
+
+      <div id="drafts-container" class="admin-draft-list"></div>
     </section>
 
+    <section id="redirect-panel" class="admin-card">
+      <p class="eyebrow">Redirigiendo</p>
+      <h2 class="admin-sync-title">Abriendo el Panel de Gestión en Línea&hellip;</h2>
+      <p class="admin-sync-desc">
+        El panel oficial cuenta con botones directos para seleccionar fotografías y videos desde la galería de tu teléfono o computadora.
+      </p>
+      <a href="admin/index.html" class="btn-primary-action">
+        Continuar al Panel de Gestión &rarr;
+      </a>
+    </section>
   </main>
 
   <script src="js/data.js"></script>

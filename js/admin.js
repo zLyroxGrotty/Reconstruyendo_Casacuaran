@@ -1,301 +1,294 @@
 // ==========================================================================
-// RECONSTRUYENDO CASACUARÁN - Panel de Edición Local
-// San Pablo Casacuarán, Yuriria, Guanajuato
+// RECONSTRUYENDO CASACUARÁN — Puente de Sincronización a la Nube y Redirección
+// Redirige automáticamente al CMS oficial (admin/index.html) salvo que existan
+// borradores locales pendientes de publicar en el servidor.
 // ==========================================================================
 
-let editingPostId = null;
+let cachedRemoteData = null;
+let pendingDrafts = [];
 
-document.addEventListener("DOMContentLoaded", async () => {
-  await DataStore.initFromRemoteOrLocal({ preferLocalDrafts: true });
-  initAdminDashboard();
+document.addEventListener("DOMContentLoaded", () => {
+  initSyncOrRedirect();
 });
 
-function initAdminDashboard() {
-  populateUrgentNoticeForm();
-  renderAdminTable();
-  setupAdminForms();
-  setupAdminDelegation();
-  setupExportImport();
-}
-
-/**
- * 1. Formulario de Aviso Urgente
- */
-function populateUrgentNoticeForm() {
-  const config = DataStore.getConfig();
-  const activeCheckbox = document.getElementById("urgent-active");
-  const textInput = document.getElementById("urgent-text");
-
-  if (config.urgentNotice) {
-    if (activeCheckbox) activeCheckbox.checked = Boolean(config.urgentNotice.active);
-    if (textInput) textInput.value = config.urgentNotice.text || "";
-  }
-}
-
-function setupAdminForms() {
-  // Formulario Aviso Urgente
-  const urgentForm = document.getElementById("urgent-notice-form");
-  if (urgentForm) {
-    urgentForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const config = DataStore.getConfig();
-      config.urgentNotice = {
-        active: document.getElementById("urgent-active").checked,
-        badge: "Aviso Urgente",
-        text: document.getElementById("urgent-text").value.trim(),
-        linkText: "Ver detalles",
-        postId: null
-      };
-      DataStore.saveConfig(config);
-      alert("Aviso superior actualizado correctamente en el almacenamiento local.");
-    });
-  }
-
-  // Formulario de Publicación
-  const postForm = document.getElementById("post-form");
-  const cancelBtn = document.getElementById("btn-cancel-edit");
-
-  if (postForm) {
-    // Establecer fecha de hoy por defecto
-    const dateInput = document.getElementById("post-date");
-    if (dateInput && !dateInput.value) {
-      dateInput.value = new Date().toISOString().split("T")[0];
+async function initSyncOrRedirect() {
+  try {
+    const res = await fetch("./content/site-data.json", { cache: "no-cache" });
+    if (res.ok) {
+      cachedRemoteData = await res.json();
     }
-
-    postForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-
-      const title = document.getElementById("post-title").value.trim();
-      const category = document.getElementById("post-category").value;
-      const categoryLabel = getCategoryLabel(category);
-      const date = document.getElementById("post-date").value || new Date().toISOString().split("T")[0];
-      const location = document.getElementById("post-location").value.trim();
-      const status = document.getElementById("post-status").value;
-      const statusLabel = getStatusLabel(status);
-      const summary = document.getElementById("post-summary").value.trim();
-      const content = document.getElementById("post-content").value.trim();
-      const imageUrl = document.getElementById("post-image-url").value.trim();
-      const videoUrl = document.getElementById("post-video-url").value.trim();
-      const facebookUrl = document.getElementById("post-facebook-url").value.trim();
-
-      const postData = {
-        title,
-        category,
-        categoryLabel,
-        date,
-        location,
-        status,
-        statusLabel,
-        summary,
-        content: content || summary,
-        imageUrl,
-        imagePending: !imageUrl,
-        videoUrl,
-        facebookUrl
-      };
-
-      if (editingPostId) {
-        postData.id = editingPostId;
-        DataStore.updatePost(postData);
-        alert("Publicación actualizada correctamente.");
-      } else {
-        DataStore.addPost(postData);
-        alert("Nueva publicación agregada al registro local.");
-      }
-
-      resetPostForm();
-      renderAdminTable();
-    });
+  } catch (e) {
+    console.warn("No fue posible consultar content/site-data.json:", e);
   }
 
-  if (cancelBtn) {
-    cancelBtn.addEventListener("click", resetPostForm);
-  }
-}
+  const remotePubs = (cachedRemoteData && Array.isArray(cachedRemoteData.publications))
+    ? cachedRemoteData.publications
+    : [];
 
-/**
- * 2. Renderizar Tabla de Publicaciones
- */
-function renderAdminTable() {
-  const tbody = document.getElementById("admin-tbody");
-  const countLabel = document.getElementById("posts-count-label");
-  if (!tbody) return;
+  pendingDrafts = DataStore.getLocalOnlyDrafts(remotePubs).map(cleanDraftForCloud);
 
-  const posts = DataStore.getPosts();
-  if (countLabel) {
-    countLabel.textContent = `${posts.length} publicaciones registradas`;
-  }
-
-  if (posts.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="5" style="text-align: center; padding: 2rem; color: var(--tinta-muda);">
-          No hay publicaciones en el registro.
-        </td>
-      </tr>
-    `;
+  // Si no hay borradores locales pendientes, redirigir de inmediato al panel oficial con selector de archivos
+  if (pendingDrafts.length === 0) {
+    window.location.replace("admin/index.html");
     return;
   }
 
-  tbody.innerHTML = posts.map(post => {
+  const redirectPanel = document.getElementById("redirect-panel");
+  const syncPanel = document.getElementById("sync-panel");
+  if (redirectPanel) redirectPanel.hidden = true;
+  if (syncPanel) syncPanel.hidden = false;
+
+  renderPendingDrafts();
+  setupSyncActions();
+}
+
+function cleanDraftForCloud(raw) {
+  let cleanVid = DataStore.cleanMediaPath(raw.videoUrl);
+  let cleanImg = DataStore.cleanMediaPath(raw.imageUrl);
+  if (/\.(mp4|mov|m4v|webm)$/i.test(cleanImg) && !cleanVid) {
+    cleanVid = cleanImg;
+    cleanImg = "";
+  }
+  const cleanPoster = DataStore.cleanMediaPath(raw.videoPoster) || DataStore.inferVideoPoster(cleanVid);
+
+  const post = {
+    id: Number(raw.id) || Date.now(),
+    title: String(raw.title || "").trim(),
+    category: raw.category || "obras",
+    categoryLabel: raw.categoryLabel || getCategoryLabel(raw.category),
+    date: String(raw.date || new Date().toISOString().split("T")[0]).split("T")[0],
+    status: raw.status || "completed",
+    statusLabel: raw.statusLabel || getStatusLabel(raw.status),
+    summary: String(raw.summary || "").trim(),
+    content: String(raw.content || raw.summary || "").trim(),
+    imageUrl: cleanImg,
+    imagePending: !cleanImg,
+    location: String(raw.location || "").trim(),
+    facebookUrl: String(raw.facebookUrl || "").trim(),
+    featured: Boolean(raw.featured)
+  };
+
+  if (cleanVid) {
+    post.videoUrl = cleanVid;
+  }
+  if (cleanPoster) {
+    post.videoPoster = cleanPoster;
+  }
+  return post;
+}
+
+function renderPendingDrafts() {
+  const container = document.getElementById("drafts-container");
+  if (!container) return;
+
+  if (pendingDrafts.length === 0) {
+    window.location.replace("admin/index.html");
+    return;
+  }
+
+  container.innerHTML = pendingDrafts.map(draft => {
+    const mediaInfo = draft.videoUrl
+      ? `Video vinculado: ${draft.videoUrl}${draft.videoPoster ? ` (Portada: ${draft.videoPoster})` : ""}`
+      : (draft.imageUrl ? `Fotografía vinculada: ${draft.imageUrl}` : "Formato boletín tipográfico (sin foto/video)");
+
     return `
-      <tr>
-        <td style="white-space: nowrap; font-variant-numeric: tabular-nums;">${escapeHtml(post.date || "")}</td>
-        <td style="font-weight: 700; color: var(--tinta);">${escapeHtml(post.title)}</td>
-        <td>${escapeHtml(post.categoryLabel || post.category)}</td>
-        <td>${escapeHtml(post.statusLabel || post.status)}</td>
-        <td style="text-align: right; white-space: nowrap;">
-          <button type="button" class="btn-secondary-action" data-admin-action="edit" data-id="${post.id}" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; margin-right: 0.35rem;">
-            Editar
+      <article class="admin-draft-item">
+        <div>
+          <p class="admin-draft-meta">${escapeHtml(draft.date)} &bull; ${escapeHtml(draft.categoryLabel)}</p>
+          <h3 class="admin-draft-name">${escapeHtml(draft.title)}</h3>
+          <p class="admin-draft-summary">${escapeHtml(draft.summary)}</p>
+          <p class="admin-draft-media">${escapeHtml(mediaInfo)}</p>
+        </div>
+        <div class="admin-draft-btns">
+          <button type="button" class="btn-secondary-action" data-draft-action="copy" data-id="${draft.id}">
+            Copiar texto
           </button>
-          <button type="button" class="btn-secondary-action" data-admin-action="delete" data-id="${post.id}" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; color: var(--guardapolvo);">
-            Eliminar
+          <button type="button" class="btn-secondary-action" data-draft-action="discard" data-id="${draft.id}">
+            Descartar
           </button>
-        </td>
-      </tr>
+        </div>
+      </article>
     `;
   }).join("");
 }
 
-/**
- * 3. Delegación de eventos para Editar y Eliminar
- */
-function setupAdminDelegation() {
-  document.addEventListener("click", (e) => {
-    const target = e.target.closest("[data-admin-action]");
-    if (!target) return;
+function setupSyncActions() {
+  const publishBtn = document.getElementById("btn-publish-cloud");
+  if (publishBtn) {
+    publishBtn.addEventListener("click", publishDraftsToGitGateway);
+  }
 
-    const action = target.getAttribute("data-admin-action");
-    const id = Number(target.getAttribute("data-id"));
+  document.addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-draft-action]");
+    if (!btn) return;
 
-    if (action === "edit" && id) {
-      editPost(id);
-    } else if (action === "delete" && id) {
-      deletePostConfirm(id);
+    const action = btn.getAttribute("data-draft-action");
+    const id = Number(btn.getAttribute("data-id"));
+    const draft = pendingDrafts.find(d => Number(d.id) === id);
+    if (!draft) return;
+
+    if (action === "copy") {
+      const fullText = `${draft.title}\nFecha: ${draft.date}\nUbicación: ${draft.location}\n\nResumen:\n${draft.summary}\n\nContenido:\n${draft.content}`;
+      try {
+        await navigator.clipboard.writeText(fullText);
+        showFeedback("Texto copiado al portapapeles.", false);
+      } catch (err) {
+        showFeedback("No se pudo copiar automáticamente.", true);
+      }
+    } else if (action === "discard") {
+      DataStore.deletePost(id);
+      pendingDrafts = pendingDrafts.filter(d => Number(d.id) !== id);
+      renderPendingDrafts();
     }
   });
 }
 
-function editPost(id) {
-  const posts = DataStore.getPosts();
-  const post = posts.find(p => p.id === id);
-  if (!post) return;
-
-  editingPostId = post.id;
-
-  document.getElementById("post-title").value = post.title || "";
-  document.getElementById("post-category").value = post.category || "obras";
-  document.getElementById("post-date").value = post.date || "";
-  document.getElementById("post-location").value = post.location || "";
-  document.getElementById("post-status").value = post.status || "completed";
-  document.getElementById("post-summary").value = post.summary || "";
-  document.getElementById("post-content").value = post.content || "";
-  document.getElementById("post-image-url").value = post.imageUrl || "";
-  document.getElementById("post-video-url").value = post.videoUrl || "";
-  document.getElementById("post-facebook-url").value = post.facebookUrl || "";
-
-  const formTitle = document.getElementById("form-mode-title");
-  const cancelBtn = document.getElementById("btn-cancel-edit");
-  const submitBtn = document.getElementById("btn-submit-post");
-
-  if (formTitle) formTitle.textContent = "Editando Publicación";
-  if (cancelBtn) cancelBtn.style.display = "inline-block";
-  if (submitBtn) submitBtn.textContent = "Guardar Cambios";
-
-  document.getElementById("form-container").scrollIntoView({ behavior: "smooth" });
-}
-
-function deletePostConfirm(id) {
-  const posts = DataStore.getPosts();
-  const post = posts.find(p => p.id === id);
-  const title = post ? post.title : "esta publicación";
-
-  if (confirm(`¿Deseas eliminar la publicación: "${title}"?\nEsta acción no se puede deshacer.`)) {
-    DataStore.deletePost(id);
-    if (editingPostId === id) resetPostForm();
-    renderAdminTable();
-  }
-}
-
-function resetPostForm() {
-  editingPostId = null;
-  const form = document.getElementById("post-form");
-  const formTitle = document.getElementById("form-mode-title");
-  const cancelBtn = document.getElementById("btn-cancel-edit");
-  const submitBtn = document.getElementById("btn-submit-post");
-
-  if (form) form.reset();
-  if (formTitle) formTitle.textContent = "Nueva Publicación";
-  if (cancelBtn) cancelBtn.style.display = "none";
-  if (submitBtn) submitBtn.textContent = "Guardar Publicación";
-
-  const dateInput = document.getElementById("post-date");
-  if (dateInput) dateInput.value = new Date().toISOString().split("T")[0];
-}
-
-/**
- * 4. Descarga y Respaldo de site-data.json
- */
-function setupExportImport() {
-  const downloadFn = () => {
-    const jsonStr = DataStore.exportSiteDataJson();
-    const blob = new Blob([jsonStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "site-data.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const quickBtn = document.getElementById("btn-quick-download");
-  const exportBtn = document.getElementById("btn-export-json");
-  if (quickBtn) quickBtn.addEventListener("click", downloadFn);
-  if (exportBtn) exportBtn.addEventListener("click", downloadFn);
-
-  const importFile = document.getElementById("import-json-file");
-  if (importFile) {
-    importFile.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        try {
-          const parsed = JSON.parse(event.target.result);
-          if (parsed && Array.isArray(parsed.publications)) {
-            DataStore.savePosts(parsed.publications);
-            if (parsed.config) DataStore.saveConfig(parsed.config);
-            renderAdminTable();
-            populateUrgentNoticeForm();
-            alert("Archivo site-data.json cargado correctamente.");
-          } else {
-            alert("El archivo no tiene el formato esperado (debe contener 'publications').");
-          }
-        } catch (err) {
-          alert("Error leyendo el archivo JSON: " + err.message);
-        }
-      };
-      reader.readAsText(file);
-    });
+async function getNetlifyJwt() {
+  if (window.netlifyIdentity) {
+    const user = window.netlifyIdentity.currentUser();
+    if (user) {
+      return await user.jwt();
+    }
   }
 
-  const resetBtn = document.getElementById("btn-reset-demo");
-  if (resetBtn) {
-    resetBtn.addEventListener("click", () => {
-      if (confirm("¿Deseas restablecer las publicaciones originales de Casacuarán?")) {
-        DataStore.resetToDefaults();
-        renderAdminTable();
-        populateUrgentNoticeForm();
-        alert("Valores restablecidos.");
+  try {
+    const rawGotrue = localStorage.getItem("gotrue.user");
+    if (rawGotrue) {
+      const parsed = JSON.parse(rawGotrue);
+      if (parsed && parsed.token && parsed.token.access_token) {
+        return parsed.token.access_token;
+      }
+    }
+    const rawCms = localStorage.getItem("netlify-cms-user");
+    if (rawCms) {
+      const parsed = JSON.parse(rawCms);
+      if (parsed && parsed.token) {
+        return parsed.token;
+      }
+    }
+  } catch (e) {
+    console.warn("No se encontró sesión local de Identity:", e);
+  }
+  return null;
+}
+
+async function publishDraftsToGitGateway() {
+  const publishBtn = document.getElementById("btn-publish-cloud");
+  showFeedback("Conectando con el servidor de Casacuarán...", false);
+
+  let token = await getNetlifyJwt();
+  if (!token) {
+    if (window.netlifyIdentity) {
+      showFeedback("Inicia sesión con tu cuenta de administrador para publicar en la nube.", true);
+      window.netlifyIdentity.open("login");
+      window.netlifyIdentity.on("login", () => {
+        window.netlifyIdentity.close();
+        publishDraftsToGitGateway();
+      });
+      return;
+    }
+    showFeedback("Abre primero el Panel Oficial para iniciar sesión.", true);
+    return;
+  }
+
+  if (publishBtn) publishBtn.disabled = true;
+
+  try {
+    const endpoint = "/.netlify/git/github/contents/content/site-data.json";
+    const getRes = await fetch(`${endpoint}?ref=main`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github.v3+json"
       }
     });
+
+    if (!getRes.ok) {
+      throw new Error(`No se pudo leer el repositorio remoto (HTTP ${getRes.status}).`);
+    }
+
+    const fileMeta = await getRes.json();
+    const currentJsonStr = base64ToUtf8(fileMeta.content || "");
+    const currentData = JSON.parse(currentJsonStr);
+    const existingPubs = Array.isArray(currentData.publications) ? currentData.publications : [];
+
+    // Re-filtrar para evitar duplicados y asignar IDs consecutivos limpios
+    const freshDrafts = DataStore.getLocalOnlyDrafts(existingPubs).map(cleanDraftForCloud);
+    let maxId = existingPubs.reduce((acc, p) => Math.max(acc, Number(p.id) || 0), 0);
+    const preparedDrafts = freshDrafts.map(d => {
+      maxId += 1;
+      const copy = { ...d, id: maxId };
+      delete copy._isLocalDraft;
+      return copy;
+    });
+
+    const combined = [...preparedDrafts, ...existingPubs];
+    combined.sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
+
+    const updatedData = {
+      config: currentData.config || DataStore.getConfig(),
+      publications: combined
+    };
+
+    const encodedContent = utf8ToBase64(JSON.stringify(updatedData, null, 2) + "\n");
+
+    const putRes = await fetch(endpoint, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github.v3+json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: "feat(cms): publicar comunicados pendientes en el portal publico",
+        content: encodedContent,
+        sha: fileMeta.sha,
+        branch: "main"
+      })
+    });
+
+    if (!putRes.ok) {
+      throw new Error(`No se pudo guardar en el servidor (HTTP ${putRes.status}).`);
+    }
+
+    DataStore.savePosts(combined);
+    showFeedback("¡Publicaciones subidas con éxito! En ~30 segundos estarán visibles para todo el público. Redirigiendo...", false);
+
+    setTimeout(() => {
+      window.location.replace("index.html");
+    }, 1800);
+  } catch (err) {
+    if (publishBtn) publishBtn.disabled = false;
+    showFeedback(`Error al sincronizar: ${err.message}`, true);
   }
 }
 
-/**
- * Helpers
- */
+function showFeedback(msg, isError) {
+  const el = document.getElementById("sync-feedback");
+  if (!el) return;
+  el.hidden = false;
+  el.textContent = msg;
+  el.classList.toggle("admin-sync-status--error", Boolean(isError));
+}
+
+function utf8ToBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+function base64ToUtf8(b64) {
+  const clean = b64.replace(/\s+/g, "");
+  const binary = atob(clean);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return new TextDecoder("utf-8").decode(bytes);
+}
+
 function getCategoryLabel(category) {
   switch (category) {
     case "obras": return "Obras Públicas";
@@ -313,7 +306,7 @@ function getStatusLabel(status) {
     case "in_progress": return "En ejecución";
     case "upcoming": return "En preparación";
     case "notice": return "Aviso Oficial";
-    default: return "Activo";
+    default: return "Registrada";
   }
 }
 

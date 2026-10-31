@@ -20,6 +20,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import unquote
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 IMG_DIR = ROOT_DIR / "IMG"
@@ -77,7 +78,7 @@ def probe_video(path: Path) -> dict:
 
 
 def extract_poster(video_path: Path, poster_path: Path, duration: float) -> bool:
-    seek_sec = 1.0 if duration >= 2.5 else max(0.0, duration * 0.25)
+    seek_sec = duration * 0.48 if duration >= 3.0 else max(0.0, duration * 0.35)
     cmd = [
         "ffmpeg", "-y", "-v", "error",
         "-ss", f"{seek_sec:.2f}",
@@ -165,7 +166,16 @@ def convert_image_to_webp(img_path: Path) -> Path | None:
 
 
 def normalize_rel(rel_str: str) -> str:
-    return rel_str.strip().lstrip("/")
+    cleaned = unquote(rel_str.strip()).replace("\\", "/").lstrip("/")
+    if not cleaned:
+        return ""
+    if cleaned.startswith(("http://", "https://", "data:")):
+        return cleaned
+    if ":" in cleaned or "fakepath/" in cleaned.lower() or "_originales_sin_comprimir/" in cleaned:
+        return f"IMG/{cleaned.split('/')[-1]}"
+    if "/" not in cleaned:
+        return f"IMG/{cleaned}"
+    return cleaned
 
 
 def update_site_data(renames: dict[str, str], posters: dict[str, str], webps: dict[str, str]) -> bool:

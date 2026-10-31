@@ -50,5 +50,13 @@
   "Yuriria_header_web.mp4": {
     "sha256": "22602bc51c287a2f10989320aa46f8c5d72fa39403f0080c8d42e318f44e72ee",
     "size": 6244222
+  },
+  "Donativos_casacuaran-poster.webp": {
+    "sha256": "3792504c19158581e67652b82c646577112baaade7a8fa0673ffa075d1fd59f8",
+    "size": 84476
+  },
+  "Donativos_casacuaran.mp4": {
+    "sha256": "8eeb47a09dd84b7282b7384c0b5223e32bc66506597288400904566d85832729",
+    "size": 7599799
   }
 }
