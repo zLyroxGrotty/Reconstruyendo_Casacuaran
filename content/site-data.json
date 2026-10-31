@@ -34,22 +34,6 @@
       "imageFallback": "IMG/Bienvenida_alcalde.jpg"
     },
     {
-      "id": 10,
-      "title": "¡TRABAJANDO POR NUESTRA COMUNIDAD!",
-      "category": "obras",
-      "categoryLabel": "Obras Públicas",
-      "date": "2026-10-19",
-      "status": "completed",
-      "statusLabel": "Concluida",
-      "summary": "El día de hoy realizamos trabajos de mantenimiento para mejorar los caminos al Panteón Nuevo, al Panteón Viejo y a Gervacio.",
-      "content": "Agradecemos de corazón al Ing. René Carmona por facilitarnos la motoconformadora. La Delegación cubrió el diésel y la alimentación de los operadores.\n💰 Inversión total: $2,300 pesos\n- $1,000 aportados por el Sr. Martín Calderón Pérez.\n- $1,300 de fondos de la Delegación.\nEn el camino a Gervacio, los trabajos fueron limitados debido a la falta de material, por lo que seguiremos gestionando alternativas para mejorar su estado.\n¡Gracias a quienes contribuyen al bienestar de nuestra comunidad!\nDelegación Reconstruyendo Casacuarán\nCasacuarán fuerte, nuestro hogar, nuestro orgullo",
-      "imageUrl": "IMG/855645228_122192441918635646_82676885387-wckt1.webp",
-      "imagePending": false,
-      "location": "Panteón Nuevo, al Panteón Viejo y a Gervacio.",
-      "facebookUrl": "",
-      "featured": false
-    },
-    {
       "id": 9,
       "title": "¡TRABAJANDO POR NUESTRA COMUNIDAD!",
       "category": "obras",
