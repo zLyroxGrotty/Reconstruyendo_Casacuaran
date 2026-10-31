@@ -1,0 +1,55 @@
+name: Optimizar Videos e Imagenes Subidas
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'IMG/**'
+      - 'content/site-data.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: optimize-media-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  compress-media:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar FFmpeg con soporte WebP y H.264
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Comprimir videos nuevos, generar portadas WebP y enlazar JSON
+        run: python3 scripts/optimize_media.py
+
+      - name: Guardar archivos optimizados en el repositorio
+        run: |
+          git config user.name "casacuaran-media-bot"
+          git config user.email "actions@github.com"
+          git add IMG/ content/site-data.json
+          if git diff --cached --quiet; then
+            echo "Sin archivos multimedia pendientes de optimizar."
+          else
+            git commit -m "chore(media): comprimir multimedia y generar portadas WebP [skip ci]"
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push origin HEAD:"${GITHUB_REF_NAME}"
+          fi

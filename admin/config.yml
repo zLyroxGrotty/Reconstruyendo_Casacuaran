@@ -1,0 +1,80 @@
+backend:
+  name: git-gateway
+  branch: main
+
+locale: 'es'
+media_folder: "IMG"
+public_folder: "IMG"
+
+collections:
+  - name: "datos_sitio"
+    label: "Portal y Publicaciones"
+    files:
+      - name: "portal_data"
+        label: "Contenido Comunitario (Historias, Obras y Avisos)"
+        file: "content/site-data.json"
+        description: "Configuración general, aviso superior y listado de publicaciones de San Pablo Casacuarán"
+        fields:
+          - name: "config"
+            label: "Configuración General y Aviso Superior"
+            widget: "object"
+            collapsed: true
+            fields:
+              - { name: "communityName", label: "Nombre de la Comunidad", widget: "string", default: "San Pablo Casacuarán" }
+              - { name: "municipality", label: "Municipio y Estado", widget: "string", default: "Yuriria, Guanajuato" }
+              - { name: "slogan", label: "Lema del Portal", widget: "string" }
+              - name: "urgentNotice"
+                label: "Aviso Urgente (Cintillo Superior)"
+                widget: "object"
+                fields:
+                  - { name: "active", label: "Mostrar aviso en la web", widget: "boolean", default: false }
+                  - { name: "badge", label: "Etiqueta corta", widget: "string", default: "Aviso" }
+                  - { name: "text", label: "Mensaje del aviso", widget: "string", required: false }
+                  - { name: "linkText", label: "Texto del botón", widget: "string", default: "Ver detalle", required: false }
+                  - { name: "postId", label: "ID de publicación vinculada (opcional)", widget: "number", required: false }
+              - { name: "delegationSchedule", label: "Horario de Delegación", widget: "string", required: false }
+              - { name: "emergencyPhone", label: "Teléfono de Atención", widget: "string", required: false }
+              - { name: "waterServicePhone", label: "Teléfono de Servicios", widget: "string", required: false }
+              - { name: "facebookPageUrl", label: "URL de Página de Facebook", widget: "string", required: false }
+
+          - name: "publications"
+            label: "Publicaciones, Obras y Comunicados"
+            label_singular: "Publicación"
+            widget: "list"
+            summary: "{{fields.title}} — {{fields.date}}"
+            fields:
+              - { name: "title", label: "Título de la publicación", widget: "string" }
+              - name: "category"
+                label: "Categoría"
+                widget: "select"
+                default: "obras"
+                options:
+                  - { label: "Obras Públicas", value: "obras" }
+                  - { label: "Faenas Comunitarias", value: "faenas" }
+                  - { label: "Salud y Bienestar", value: "salud" }
+                  - { label: "Tradición y Cultura", value: "cultura" }
+                  - { label: "Avisos Delegacionales", value: "avisos" }
+              - { name: "date", label: "Fecha", widget: "datetime", format: "YYYY-MM-DD", time_format: false }
+              - name: "status"
+                label: "Estado"
+                widget: "select"
+                default: "completed"
+                options:
+                  - { label: "Concluida", value: "completed" }
+                  - { label: "En ejecución / Convocatoria abierta", value: "in_progress" }
+                  - { label: "En preparación / Próximamente", value: "upcoming" }
+                  - { label: "Aviso Oficial", value: "notice" }
+              - { name: "location", label: "Ubicación en Casacuarán", widget: "string", required: false, hint: "Ej. Jardín Principal, Casa de Cultura, Calle Principal" }
+              - { name: "summary", label: "Resumen breve (1 o 2 frases para la tarjeta)", widget: "text" }
+              - { name: "content", label: "Texto completo del comunicado", widget: "text" }
+              - { name: "imageUrl", label: "Fotografía (se optimiza a WebP automáticamente)", widget: "image", required: false }
+              - { name: "videoUrl", label: "Video MP4/MOV (se comprime automáticamente al publicar)", widget: "file", required: false, hint: "Sube tu video directo desde tu celular o PC; el servidor lo comprimirá y generará su portada automáticamente." }
+              - { name: "videoPoster", label: "Portada personalizada del video (opcional)", widget: "image", required: false, hint: "Déjalo vacío para que el sistema extraiga un fotograma automáticamente." }
+              - { name: "facebookUrl", label: "Enlace a publicación en Facebook (opcional)", widget: "string", required: false }
+              - { name: "featured", label: "Destacada", widget: "boolean", default: false, required: false }
+              - { name: "id", label: "ID interno (opcional, automático)", widget: "number", required: false }
+              - { name: "categoryLabel", label: "Etiqueta personalizada de categoría (opcional)", widget: "string", required: false }
+              - { name: "statusLabel", label: "Etiqueta personalizada de estado (opcional)", widget: "string", required: false }
+              - { name: "imageFallback", label: "Imagen JPG de respaldo (automático)", widget: "image", required: false }
+              - { name: "videoFallbackUrl", label: "Video alternativo ligero (opcional)", widget: "file", required: false }
+              - { name: "imagePending", label: "Sin fotografía (mostrar en lista de avisos)", widget: "boolean", default: false, required: false }

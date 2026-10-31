@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 84" fill="none">
+  <!-- Símbolo: Campanario y Cuesta -->
+  <g transform="translate(6, 4)">
+    <!-- Curvas de la Cuesta (Catziatsiariatzi) -->
+    <path d="M4 64 C 22 64, 38 60, 52 56 C 66 52, 74 54, 82 56" stroke="#28533E" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M10 68 C 26 68, 42 64, 56 61 C 68 58, 76 60, 80 61" stroke="#84A98C" stroke-width="1.5" stroke-dasharray="3 3" stroke-linecap="round"/>
+
+    <!-- Campanario San Pablo Casacuarán -->
+    <g transform="translate(18, 6)">
+      <!-- Base de cantera -->
+      <rect x="12" y="32" width="22" height="24" rx="1" fill="#A84B2B"/>
+      <!-- Arco ventana inferior -->
+      <path d="M19 46 C 19 42, 27 42, 27 46 L 27 56 L 19 56 Z" fill="#FAF8F5"/>
+      <!-- Cornisa divisoria -->
+      <rect x="10" y="30" width="26" height="2.5" rx="0.5" fill="#C89650"/>
+
+      <!-- Cuerpo de campanas -->
+      <rect x="13.5" y="14" width="19" height="16" fill="#A84B2B"/>
+      <!-- Arcada de campana -->
+      <path d="M16 26 L16 19 C16 16, 21 16, 21 19 L21 26 Z" fill="#FAF8F5"/>
+      <path d="M25 26 L25 19 C25 16, 30 16, 30 19 L30 26 Z" fill="#FAF8F5"/>
+      <ellipse cx="18.5" cy="23" rx="1.5" ry="2" fill="#C89650"/>
+      <ellipse cx="27.5" cy="23" rx="1.5" ry="2" fill="#C89650"/>
+
+      <!-- Cornisa superior -->
+      <rect x="12" y="12" width="22" height="2" rx="0.5" fill="#C89650"/>
+      <!-- Cúpula agustina -->
+      <path d="M15 12 C 15 4, 31 4, 31 12 Z" fill="#8C381E"/>
+      <!-- Linternilla y Cruz -->
+      <rect x="21.5" y="2" width="3" height="3" fill="#C89650"/>
+      <path d="M23 0 L23 3 M21 1.5 L25 1.5" stroke="#C89650" stroke-width="1.2" stroke-linecap="round"/>
+      
+      <!-- Destello sutil de sol comunitario -->
+      <circle cx="38" cy="10" r="4.5" fill="#C89650" opacity="0.35"/>
+    </g>
+  </g>
+
+  <!-- Tipografía del Logotipo -->
+  <g transform="translate(94, 18)">
+    <text x="0" y="14" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="9" font-weight="700" letter-spacing="3.2" fill="#6B625B" text-transform="uppercase">
+      RECONSTRUYENDO
+    </text>
+    <text x="0" y="38" font-family="'Cinzel', 'Playfair Display', Georgia, serif" font-size="22" font-weight="700" letter-spacing="0.5" fill="#A84B2B">
+      CASACUARÁN
+    </text>
+    <text x="0" y="52" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="8" font-weight="600" letter-spacing="2" fill="#8F857D" text-transform="uppercase">
+      SAN PABLO • YURIRIA, GTO.
+    </text>
+  </g>
+</svg>

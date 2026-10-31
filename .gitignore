@@ -1,0 +1,10 @@
+# Archivos crudos originales de respaldo local (no subir al servidor web)
+_originales_sin_comprimir/
+Yuririra_header.mp4
+
+# Archivos temporales del sistema operativo
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.tmp
+.tmp_*

@@ -1,0 +1,54 @@
+{
+  "Alumbrado.jpg": {
+    "sha256": "1d0eeaeeb726ca8e14272f2ca5e316b0206c88b489f4c39c397cd7f2f62d96cc",
+    "size": 266705
+  },
+  "Alumbrado.webp": {
+    "sha256": "089a4c3559040369aaf7b16cd3a767cc916af6118bf15c8e457da8a9028f9fae",
+    "size": 106990
+  },
+  "Casacuaran.jpg": {
+    "sha256": "9e027bd9e389effffef830292bc5cb75c2713a7f3851ab3ec01fe4c8c3203b9b",
+    "size": 359303
+  },
+  "Casacuaran.webp": {
+    "sha256": "60b8c6339f6cc61bb0b86012ef700fe999569bb641c9c577e25dd13b7db653e1",
+    "size": 167268
+  },
+  "Faena.jpg": {
+    "sha256": "cf695a9be05e50a0c7ff625c101ebfd6e3b8144a6b1c1376e84e98b31554fbc3",
+    "size": 526790
+  },
+  "Faena.webp": {
+    "sha256": "64380ddb55c9bc73f972ccd735c5fce0e075d485b96082f99fde3cf471343f04",
+    "size": 222214
+  },
+  "Fiesta-480p.mp4": {
+    "sha256": "1dd96e91bef014e7c733aed8f4d7e8f8301b5e49fa8be0d40078afc7dc98f266",
+    "size": 7678271
+  },
+  "Fiesta-poster.jpg": {
+    "sha256": "a253fa732ef5ba241bdfe73af897b4a637b9601c046427a9600034e8fdffb92e",
+    "size": 80219
+  },
+  "Fiesta-poster.webp": {
+    "sha256": "dac8ff6cb537501c7532530598bc139df2b27b907324817d63c2aace874af60f",
+    "size": 34240
+  },
+  "Fiesta-web.mp4": {
+    "sha256": "edf5ee5eee5c056c4cbefdf2f423240953acf67705a7c7bfb05fdaef5c9d0080",
+    "size": 10120832
+  },
+  "Yuriria_header_720p.mp4": {
+    "sha256": "c5ebc27f626b4afd096e3f910f617962257d2dd26b2ded033ea7c37dcc7f8a92",
+    "size": 2788058
+  },
+  "Yuriria_header_poster.webp": {
+    "sha256": "5bb75ded200f362f8a92755716287861605463710dea7954b823fa4c19466b54",
+    "size": 78718
+  },
+  "Yuriria_header_web.mp4": {
+    "sha256": "22602bc51c287a2f10989320aa46f8c5d72fa39403f0080c8d42e318f44e72ee",
+    "size": 6244222
+  }
+}

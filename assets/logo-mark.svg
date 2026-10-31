@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Fondo redondeado suave con borde -->
+  <rect width="100" height="100" rx="22" fill="#FAF8F5"/>
+  <rect x="1" y="1" width="98" height="98" rx="21" stroke="#E6DFD5" stroke-width="2"/>
+
+  <!-- Curvas de la Cuesta -->
+  <path d="M12 76 C 36 76, 54 71, 70 67 C 82 64, 88 66, 92 67" stroke="#28533E" stroke-width="3" stroke-linecap="round"/>
+  <path d="M18 82 C 40 82, 58 77, 74 74 C 84 71, 88 73, 92 74" stroke="#84A98C" stroke-width="2" stroke-dasharray="3 3" stroke-linecap="round"/>
+
+  <!-- Campanario San Pablo -->
+  <g transform="translate(28, 12)">
+    <!-- Base de cantera -->
+    <rect x="12" y="36" width="22" height="28" rx="1.5" fill="#A84B2B"/>
+    <path d="M18 52 C 18 46, 28 46, 28 52 L 28 64 L 18 64 Z" fill="#FAF8F5"/>
+    <rect x="10" y="34" width="26" height="3" rx="1" fill="#C89650"/>
+
+    <!-- Cuerpo de campanas -->
+    <rect x="13.5" y="16" width="19" height="18" fill="#A84B2B"/>
+    <path d="M16 29 L16 22 C16 19, 21 19, 21 22 L21 29 Z" fill="#FAF8F5"/>
+    <path d="M25 29 L25 19 C25 16, 30 16, 30 19 L30 29 Z" fill="#FAF8F5"/>
+    <ellipse cx="18.5" cy="26" rx="1.5" ry="2" fill="#C89650"/>
+    <ellipse cx="27.5" cy="26" rx="1.5" ry="2" fill="#C89650"/>
+
+    <!-- Cornisa superior -->
+    <rect x="12" y="14" width="22" height="2.5" rx="0.5" fill="#C89650"/>
+    <!-- Cúpula -->
+    <path d="M15 14 C 15 5, 31 5, 31 14 Z" fill="#8C381E"/>
+    <!-- Linternilla y Cruz -->
+    <rect x="21.5" y="3" width="3" height="3.5" fill="#C89650"/>
+    <path d="M23 1 L23 4 M21 2.5 L25 2.5" stroke="#C89650" stroke-width="1.5" stroke-linecap="round"/>
+    
+    <!-- Destello solar -->
+    <circle cx="39" cy="12" r="5" fill="#C89650" opacity="0.4"/>
+  </g>
+</svg>

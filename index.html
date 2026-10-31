@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reconstruyendo Casacuarán — San Pablo Casacuarán, Yuriria</title>
+  <meta name="description" content="Iniciativa cívica y comunitaria de San Pablo Casacuarán, Yuriria, Guanajuato. Historias, registro abierto de obras públicas, faenas vecinales y memoria colectiva.">
+  <link rel="icon" type="image/svg+xml" href="assets/logo-mark.svg">
+
+  <link rel="preload" href="assets/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/public-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="IMG/Yuriria_header_poster.webp" as="image" type="image/webp">
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <a href="#main-content" class="skip-link">Saltar al contenido</a>
+
+  <!-- Aviso urgente discreto (solo aparece cuando está activo) -->
+  <aside id="urgent-banner" class="urgent-bar" aria-label="Aviso comunitario" hidden></aside>
+
+  <!-- Cabecera blanca minimalista (Variante A — City Bureau) -->
+  <header id="site-header" class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="brand-wordmark" aria-label="Reconstruyendo Casacuarán — Inicio">
+        <span class="brand-wordmark-primary">Casacuarán</span>
+        <span class="brand-wordmark-secondary">Reconstruyendo</span>
+      </a>
+
+      <nav class="primary-nav" aria-label="Navegación principal">
+        <ul class="primary-nav-list">
+          <li><a href="#nosotros" class="primary-nav-link">Nosotros</a></li>
+          <li><a href="#comunicados" class="primary-nav-link">Historias</a></li>
+          <li><a href="#obras" class="primary-nav-link">Obras</a></li>
+          <li><a href="#patrimonio" class="primary-nav-link">Raíces</a></li>
+          <li><a href="#directorio" class="primary-nav-link">Directorio</a></li>
+          <li><a href="admin.html" class="primary-nav-link primary-nav-link--muted">Gestión</a></li>
+        </ul>
+      </nav>
+
+      <button type="button" id="mobile-nav-toggle" class="mobile-nav-toggle" aria-expanded="false" aria-controls="mobile-menu-panel">
+        Menú
+      </button>
+    </div>
+  </header>
+
+  <!-- Menú móvil limpio a pantalla completa -->
+  <nav id="mobile-menu-panel" class="mobile-menu-panel" aria-label="Menú móvil" hidden>
+    <ul class="mobile-menu-list">
+      <li><a href="#nosotros" class="mobile-menu-link">Nosotros</a></li>
+      <li><a href="#comunicados" class="mobile-menu-link">Historias y Comunicados</a></li>
+      <li><a href="#obras" class="mobile-menu-link">Registro de Obras</a></li>
+      <li><a href="#patrimonio" class="mobile-menu-link">Raíces y Comunidad</a></li>
+      <li><a href="#directorio" class="mobile-menu-link">Directorio</a></li>
+      <li><a href="admin.html" class="mobile-menu-link">Panel de Gestión</a></li>
+    </ul>
+    <div class="mobile-menu-footer">
+      San Pablo Casacuarán &bull; Yuriria, Guanajuato
+    </div>
+  </nav>
+
+  <main id="main-content">
+
+    <!-- PORTADA CON VIDEO A PANTALLA COMPLETA Y PLACA CENTRAL (VARIANTE A) -->
+    <section class="hero-stage" aria-label="Portada documental de San Pablo Casacuarán y Yuriria">
+      <video id="hero-video"
+             class="hero-video"
+             autoplay
+             muted
+             loop
+             playsinline
+             preload="metadata"
+             poster="IMG/Yuriria_header_poster.webp">
+        <source src="IMG/Yuriria_header_720p.mp4" media="(max-width: 768px)" type="video/mp4">
+        <source src="IMG/Yuriria_header_web.mp4" type="video/mp4">
+      </video>
+
+      <div class="hero-veil" role="presentation"></div>
+
+      <div class="hero-plaque">
+        <h1 class="hero-plaque-title">Reconstruyendo Casacuarán</h1>
+        <p class="hero-plaque-motto">
+          Participación vecinal, memoria y obras colectivas como un acto cívico cotidiano para toda nuestra comunidad
+        </p>
+      </div>
+
+      <button type="button" id="hero-video-toggle" class="hero-video-control" aria-label="Pausar video de portada">
+        Pausar
+      </button>
+    </section>
+
+    <!-- NOSOTROS / RETRATO COMUNITARIO -->
+    <section id="nosotros" class="section-intro">
+      <div class="container">
+        <div class="intro-grid">
+          <div>
+            <p class="eyebrow eyebrow--accent">San Pablo Casacuarán &bull; Yuriria, Gto.</p>
+            <h2 class="intro-statement">
+              Un espacio abierto para documentar el esfuerzo de nuestras familias, cuidar lo común y mantener cerca a quienes están lejos.
+            </h2>
+            <p class="intro-copy">
+              En la ladera frente a la laguna de Yuriria, la vida pública de Casacuarán se sostiene gracias a las faenas voluntarias, la organización entre barrios y el respaldo constante de nuestros paisanos. Aquí reunimos avances de obras, convocatorias de salud y crónicas de nuestra tierra sin intermediarios.
+            </p>
+
+            <div class="intro-metrics">
+              <div>
+                <div id="stat-obras" class="metric-value">--</div>
+                <div class="metric-label">Obras documentadas</div>
+              </div>
+              <div>
+                <div id="stat-faenas" class="metric-value">--</div>
+                <div class="metric-label">Faenas vecinales</div>
+              </div>
+              <div>
+                <div class="metric-value">1582</div>
+                <div class="metric-label">Año de fundación</div>
+              </div>
+            </div>
+          </div>
+
+          <figure>
+            <picture>
+              <source srcset="IMG/Casacuaran.webp" type="image/webp">
+              <img src="IMG/Casacuaran.jpg"
+                   alt="Habitantes y familias de San Pablo Casacuarán reunidos"
+                   class="intro-figure-img"
+                   width="2048"
+                   height="956"
+                   loading="lazy">
+            </picture>
+            <figcaption class="intro-figcaption">
+              Vecinos, jóvenes y comité ciudadano de San Pablo Casacuarán reunidos tras jornada comunitaria.
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORIAS Y COMUNICADOS -->
+    <section id="comunicados" class="section-stories">
+      <div class="container">
+        <div class="section-header-row">
+          <div>
+            <p class="eyebrow">Archivo vivo de la comunidad</p>
+            <h2 class="section-heading">Historias y Comunicados</h2>
+          </div>
+
+          <div class="search-minimal">
+            <input type="search"
+                   id="search-posts"
+                   class="search-minimal-input"
+                   placeholder="Buscar por tema o ubicación..."
+                   aria-label="Buscar historias y comunicados">
+          </div>
+        </div>
+
+        <div class="filter-nav" role="toolbar" aria-label="Filtrar por categoría">
+          <button type="button" class="filter-link" data-category="todas" aria-pressed="true">Todas</button>
+          <button type="button" class="filter-link" data-category="obras" aria-pressed="false">Obras Públicas</button>
+          <button type="button" class="filter-link" data-category="faenas" aria-pressed="false">Faenas</button>
+          <button type="button" class="filter-link" data-category="salud" aria-pressed="false">Salud</button>
+          <button type="button" class="filter-link" data-category="cultura" aria-pressed="false">Cultura</button>
+          <button type="button" class="filter-link" data-category="avisos" aria-pressed="false">Avisos</button>
+        </div>
+
+        <!-- Galería fotográfica y audiovisual -->
+        <div id="stories-gallery" class="stories-gallery"></div>
+
+        <!-- Boletín limpio para comunicados sin fotografía -->
+        <div id="dispatches-block" class="dispatches-block">
+          <h3 id="dispatches-heading" class="dispatches-heading">Avisos y Convocatorias</h3>
+          <div id="dispatches-list" class="dispatches-list"></div>
+        </div>
+
+        <p id="empty-posts" class="empty-message" hidden>
+          No se encontraron publicaciones con ese criterio de búsqueda.
+        </p>
+      </div>
+    </section>
+
+    <!-- REGISTRO ABIERTO DE OBRAS Y FAENAS -->
+    <section id="obras" class="section-works">
+      <div class="container">
+        <p class="eyebrow">Transparencia vecinal</p>
+        <h2 class="section-heading">Registro de Obras y Faenas</h2>
+
+        <div class="works-table-wrap">
+          <table class="works-table">
+            <thead>
+              <tr>
+                <th scope="col">Fecha</th>
+                <th scope="col">Intervención</th>
+                <th scope="col">Ubicación</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Detalle</th>
+              </tr>
+            </thead>
+            <tbody id="obras-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- RAÍCES, TERRITORIO Y COMUNIDAD MIGRANTE -->
+    <section id="patrimonio" class="section-heritage">
+      <div class="container">
+        <div class="heritage-layout">
+          <div class="heritage-prose">
+            <p class="eyebrow eyebrow--accent">Memoria e identidad</p>
+            <h2 class="heritage-lead-title">Catziatsiariatzi: en la cuesta de la montaña</h2>
+            <p>
+              El antiguo vocablo purépecha describe la geografía exacta de San Pablo Casacuarán, asentado entre el cerro y la cuenca lacustre de Yuriria. Tierra de oficio agrícola, cantera, tejido artesanal y tradición familiar que ha sabido conservar su cohesión a lo largo de más de cuatro siglos.
+            </p>
+            <p>
+              Formalizada su fundación congregacional en febrero de 1582 vinculada a los agustinos de San Pablo de Yuriria, la parroquia y su plaza siguen siendo el punto de reencuentro cada 25 de enero durante las fiestas patronales en honor a San Pablo Apóstol.
+            </p>
+            <p class="heritage-footnote">
+              Memoria histórica en revisión y enriquecimiento continuo junto a las familias y cronistas de San Pablo Casacuarán.
+            </p>
+          </div>
+
+          <div class="heritage-pillars">
+            <div class="heritage-pillar">
+              <p class="eyebrow">Vínculo binacional</p>
+              <h3 class="heritage-pillar-title">Comunidad Migrante</h3>
+              <p class="heritage-pillar-text">
+                Las familias de Casacuarán radicadas en Estados Unidos sostienen buena parte de las mejoras colectivas del pueblo. Mostrar con claridad cada avance y cada obra concluida honra su confianza y acorta la distancia.
+              </p>
+            </div>
+
+            <div class="heritage-pillar">
+              <p class="eyebrow">Trabajo común</p>
+              <h3 class="heritage-pillar-title">Faenas Vecinales</h3>
+              <p class="heritage-pillar-text">
+                Desde la poda y pintura del Jardín Principal hasta la limpieza de accesos y espacios deportivos, la faena voluntaria mantiene vivo el sentido de pertenencia entre generaciones.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIRECTORIO ESENCIAL -->
+    <section id="directorio" class="section-directory">
+      <div class="container">
+        <p class="eyebrow">Atención y servicios</p>
+        <h2 class="section-heading">Directorio Comunitario</h2>
+
+        <div class="directory-columns">
+          <div class="directory-item">
+            <p class="eyebrow eyebrow--accent">Atención ciudadana</p>
+            <h3 class="directory-item-title">Delegación Municipal</h3>
+            <p class="directory-item-desc">
+              Constancias locales, trámites vecinales, coordinación de faenas y enlace con el municipio de Yuriria.
+            </p>
+            <p class="directory-item-meta">Lunes a viernes &bull; 9:00 a 15:00 h</p>
+            <a href="#comunicados" class="text-action-btn">Consultar avisos vigentes</a>
+          </div>
+
+          <div class="directory-item">
+            <p class="eyebrow eyebrow--accent">Servicios básicos</p>
+            <h3 class="directory-item-title">Agua Potable y Limpia</h3>
+            <p class="directory-item-desc">
+              Reportes de fugas en la red hidráulica, operación de pozos y ruta ordinaria de recolección de residuos.
+            </p>
+            <p class="directory-item-meta">Recolección: martes, jueves y sábados &bull; 8:00 h</p>
+            <a href="#obras" class="text-action-btn">Ver intervenciones recientes</a>
+          </div>
+
+          <div class="directory-item">
+            <p class="eyebrow eyebrow--accent">Canal abierto</p>
+            <h3 class="directory-item-title">Redes Comunitarias</h3>
+            <p class="directory-item-desc">
+              Cobertura fotográfica de actividades, transmisiones en vivo de eventos culturales y avisos inmediatos.
+            </p>
+            <p class="directory-item-meta">Página comunitaria en Facebook</p>
+            <a href="https://www.facebook.com/people/Reconstruyendo-Casacuar%C3%A1n/61569069380607/"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="text-action-btn">Visitar Reconstruyendo Casacuarán &nearr;</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- PIE DE PÁGINA SOBRIO -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">Reconstruyendo Casacuarán</div>
+          <p class="footer-summary">
+            Plataforma cívica e informativa dedicada a la transparencia comunitaria, la memoria local y el cuidado de los espacios públicos de San Pablo Casacuarán, Yuriria, Guanajuato.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="footer-heading">Navegación</h3>
+          <ul class="footer-links">
+            <li><a href="#nosotros">Nosotros</a></li>
+            <li><a href="#comunicados">Historias y Comunicados</a></li>
+            <li><a href="#obras">Registro de Obras</a></li>
+            <li><a href="#patrimonio">Raíces y Comunidad</a></li>
+            <li><a href="#directorio">Directorio</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="footer-heading">Administración</h3>
+          <ul class="footer-links">
+            <li><a href="admin.html">Editor Local de Contenido</a></li>
+            <li><a href="admin/index.html">Acceso Decap CMS</a></li>
+            <li><a href="https://www.facebook.com/people/Reconstruyendo-Casacuar%C3%A1n/61569069380607/" target="_blank" rel="noopener noreferrer">Facebook Comunitario</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>&copy; 2026 Reconstruyendo Casacuarán</span>
+        <span>San Pablo Casacuarán &bull; Yuriria, Guanajuato, México</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL DE LECTURA (<dialog>) -->
+  <dialog id="post-modal" class="modal-dialog" aria-labelledby="modal-title">
+    <div class="modal-topbar">
+      <span id="modal-category" class="eyebrow eyebrow--accent">Comunicado</span>
+      <button type="button" id="modal-close-btn" class="modal-close-btn" aria-label="Cerrar ventana">
+        Cerrar &times;
+      </button>
+    </div>
+    <div id="modal-content-area" class="modal-body-scroll"></div>
+  </dialog>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
