@@ -128,22 +128,35 @@ class DataStore {
   static STORAGE_KEY_CONFIG = "casacuaran_config_v3";
 
   static async initFromRemoteOrLocal({ preferLocalDrafts = false } = {}) {
+    let remoteData = null;
     try {
       const response = await fetch("./content/site-data.json", { cache: "no-cache" });
       if (response.ok) {
-        const data = await response.json();
-        if (data && data.publications && Array.isArray(data.publications)) {
-          if (preferLocalDrafts && localStorage.getItem(this.STORAGE_KEY_POSTS)) {
-            return { config: this.getConfig(), publications: this.getPosts() };
-          }
-          this.savePosts(data.publications);
-          if (data.config) this.saveConfig(data.config);
-          return { config: data.config || this.getConfig(), publications: data.publications };
-        }
+        remoteData = await response.json();
       }
     } catch (e) {
       console.info("Modo local sin servidor HTTP: usando respaldo local.");
     }
+
+    if (remoteData && remoteData.publications && Array.isArray(remoteData.publications)) {
+      const localPosts = this.getPosts();
+      const remoteIds = new Set(remoteData.publications.map(p => Number(p.id)));
+
+      // Conservar cualquier publicación agregada localmente cuyo ID no esté en el archivo remoto
+      const localOnlyPosts = localPosts.filter(p => p && p.id && !remoteIds.has(Number(p.id)));
+
+      // Las publicaciones locales van primero para verse de inmediato en la gaceta
+      const mergedPosts = [...localOnlyPosts, ...remoteData.publications];
+      this.savePosts(mergedPosts);
+
+      const mergedConfig = remoteData.config || this.getConfig();
+      if (!localStorage.getItem(this.STORAGE_KEY_CONFIG)) {
+        this.saveConfig(mergedConfig);
+      }
+
+      return { config: this.getConfig(), publications: mergedPosts };
+    }
+
     return { config: this.getConfig(), publications: this.getPosts() };
   }
 
