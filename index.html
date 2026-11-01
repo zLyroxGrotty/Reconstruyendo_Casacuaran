@@ -32,7 +32,8 @@
         <ul class="primary-nav-list">
           <li><a href="#nosotros" class="primary-nav-link">Nosotros</a></li>
           <li><a href="#comunicados" class="primary-nav-link">Historias</a></li>
-          <li><a href="#obras" class="primary-nav-link">Obras</a></li>
+          <li><a href="#dispatches-block" class="primary-nav-link">Avisos</a></li>
+          <li><a href="#obras" class="primary-nav-link">Bitácora</a></li>
           <li><a href="#patrimonio" class="primary-nav-link">Raíces</a></li>
           <li><a href="#directorio" class="primary-nav-link">Directorio</a></li>
           <li><a href="admin.html" class="primary-nav-link primary-nav-link--muted">Gestión</a></li>
@@ -50,7 +51,8 @@
     <ul class="mobile-menu-list">
       <li><a href="#nosotros" class="mobile-menu-link">Nosotros</a></li>
       <li><a href="#comunicados" class="mobile-menu-link">Historias y Comunicados</a></li>
-      <li><a href="#obras" class="mobile-menu-link">Registro de Obras</a></li>
+      <li><a href="#dispatches-block" class="mobile-menu-link">Avisos y Convocatorias</a></li>
+      <li><a href="#obras" class="mobile-menu-link">Bitácora 2024–2026</a></li>
       <li><a href="#patrimonio" class="mobile-menu-link">Raíces y Comunidad</a></li>
       <li><a href="#directorio" class="mobile-menu-link">Directorio</a></li>
       <li><a href="admin.html" class="mobile-menu-link">Panel de Gestión</a></li>
@@ -105,12 +107,12 @@
 
             <div class="intro-metrics">
               <div>
-                <div id="stat-obras" class="metric-value">--</div>
-                <div class="metric-label">Obras documentadas</div>
+                <div id="stat-total" class="metric-value">--</div>
+                <div class="metric-label">Acciones documentadas</div>
               </div>
               <div>
-                <div id="stat-faenas" class="metric-value">--</div>
-                <div class="metric-label">Faenas vecinales</div>
+                <div id="stat-obras" class="metric-value">--</div>
+                <div class="metric-label">Obras, servicios y faenas</div>
               </div>
               <div>
                 <div class="metric-value">1582</div>
@@ -137,7 +139,7 @@
       </div>
     </section>
 
-    <!-- HISTORIAS Y COMUNICADOS -->
+    <!-- HISTORIAS, CRÓNICAS Y AVISOS COMUNITARIOS -->
     <section id="comunicados" class="section-stories">
       <div class="container">
         <div class="section-header-row">
@@ -150,55 +152,110 @@
             <input type="search"
                    id="search-posts"
                    class="search-minimal-input"
-                   placeholder="Buscar por tema o ubicación..."
-                   aria-label="Buscar historias y comunicados">
+                   placeholder="Buscar historia, aviso o convocatoria..."
+                   aria-label="Buscar historias y avisos">
           </div>
         </div>
 
-        <div class="filter-nav" role="toolbar" aria-label="Filtrar por categoría">
+        <div class="filter-nav" role="toolbar" aria-label="Filtrar historias y avisos por categoría">
           <button type="button" class="filter-link" data-category="todas" aria-pressed="true">Todas</button>
-          <button type="button" class="filter-link" data-category="obras" aria-pressed="false">Obras Públicas</button>
-          <button type="button" class="filter-link" data-category="faenas" aria-pressed="false">Faenas</button>
-          <button type="button" class="filter-link" data-category="salud" aria-pressed="false">Salud</button>
-          <button type="button" class="filter-link" data-category="cultura" aria-pressed="false">Cultura</button>
           <button type="button" class="filter-link" data-category="avisos" aria-pressed="false">Avisos</button>
+          <button type="button" class="filter-link" data-category="infraestructura" aria-pressed="false">Infraestructura</button>
+          <button type="button" class="filter-link" data-category="mantenimiento" aria-pressed="false">Mantenimiento</button>
+          <button type="button" class="filter-link" data-category="cultura" aria-pressed="false">Cultura y Tradición</button>
+          <button type="button" class="filter-link" data-category="eventos" aria-pressed="false">Eventos y Kermés</button>
+          <button type="button" class="filter-link" data-category="bienestar" aria-pressed="false">Bienestar Social</button>
+          <button type="button" class="filter-link" data-category="deporte" aria-pressed="false">Deporte</button>
+          <button type="button" class="filter-link" data-category="participacion" aria-pressed="false">Formación</button>
+          <button type="button" class="filter-link" data-category="comunicacion" aria-pressed="false">Vinculación</button>
         </div>
 
         <!-- Galería fotográfica y audiovisual -->
         <div id="stories-gallery" class="stories-gallery"></div>
 
-        <!-- Boletín limpio para comunicados sin fotografía -->
+        <!-- Boletín limpio para avisos y convocatorias sin fotografía -->
         <div id="dispatches-block" class="dispatches-block">
           <h3 id="dispatches-heading" class="dispatches-heading">Avisos y Convocatorias</h3>
           <div id="dispatches-list" class="dispatches-list"></div>
         </div>
 
-        <p id="empty-posts" class="empty-message" hidden>
-          No se encontraron publicaciones con ese criterio de búsqueda.
-        </p>
+        <div id="empty-posts" class="empty-message" hidden></div>
       </div>
     </section>
 
-    <!-- REGISTRO ABIERTO DE OBRAS Y FAENAS -->
+    <!-- BITÁCORA HISTÓRICA COMPACTA DE GESTIÓN Y ACTIVIDADES (2024–2026) -->
     <section id="obras" class="section-works">
       <div class="container">
-        <p class="eyebrow">Transparencia vecinal</p>
-        <h2 class="section-heading">Registro de Obras y Faenas</h2>
+        <div class="section-header-row">
+          <div>
+            <p class="eyebrow eyebrow--accent">Memoria de trabajo y transparencia &bull; 2024–2026</p>
+            <h2 class="section-heading">Bitácora Histórica de Actividades</h2>
+            <p class="ledger-intro-note">
+              Registro cronológico de obras, faenas, gestiones y eventos comunitarios. Las actividades de 2025 documentadas por secuencia histórica indican mes y año.
+            </p>
+          </div>
+
+          <div class="search-minimal">
+            <input type="search"
+                   id="ledger-search"
+                   class="search-minimal-input"
+                   placeholder="Buscar calle, obra, kermés, comité..."
+                   aria-label="Buscar en toda la bitácora histórica">
+          </div>
+        </div>
+
+        <!-- Pestañas por año -->
+        <div id="ledger-year-nav" class="filter-nav ledger-year-nav" role="toolbar" aria-label="Filtrar bitácora por año">
+          <button type="button" class="filter-link ledger-year-btn" data-year="todos" aria-pressed="true">Todos</button>
+          <button type="button" class="filter-link ledger-year-btn" data-year="2026" aria-pressed="false">2026</button>
+          <button type="button" class="filter-link ledger-year-btn" data-year="2025" aria-pressed="false">2025</button>
+          <button type="button" class="filter-link ledger-year-btn" data-year="2024" aria-pressed="false">2024</button>
+        </div>
+
+        <!-- Filtros compactos de Categoría y Tipo de intervención -->
+        <div class="ledger-filter-row">
+          <div class="ledger-select-group">
+            <select id="ledger-category" class="ledger-select" aria-label="Filtrar bitácora por categoría">
+              <option value="todas">Todas las áreas (8 categorías)</option>
+              <option value="infraestructura">Infraestructura y servicios</option>
+              <option value="mantenimiento">Medio ambiente y mantenimiento</option>
+              <option value="cultura">Cultura, tradiciones y festividades</option>
+              <option value="eventos">Eventos comunitarios y recaudación</option>
+              <option value="bienestar">Apoyo social y bienestar</option>
+              <option value="deporte">Deporte y recreación</option>
+              <option value="participacion">Participación y formación</option>
+              <option value="comunicacion">Comunicación y vinculación</option>
+            </select>
+
+            <select id="ledger-intervention" class="ledger-select" aria-label="Filtrar por tipo de intervención">
+              <option value="todos">Todos los tipos de intervención</option>
+              <option value="Obra o mantenimiento">Obra o mantenimiento</option>
+              <option value="Gestión y coordinación">Gestión y coordinación</option>
+              <option value="Apoyo comunitario">Apoyo comunitario</option>
+              <option value="Evento o actividad">Evento o actividad</option>
+              <option value="Comunicación institucional">Comunicación institucional</option>
+            </select>
+          </div>
+
+          <span id="ledger-count-label" class="ledger-results-meta">Cargando registros...</span>
+        </div>
 
         <div class="works-table-wrap">
-          <table class="works-table">
+          <table class="works-table works-table--compact">
             <thead>
               <tr>
-                <th scope="col">Fecha</th>
-                <th scope="col">Intervención</th>
-                <th scope="col">Ubicación</th>
-                <th scope="col">Estado</th>
-                <th scope="col">Detalle</th>
+                <th scope="col">Periodo / Fecha</th>
+                <th scope="col">Actividad o Logro</th>
+                <th scope="col">Área</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Ficha</th>
               </tr>
             </thead>
             <tbody id="obras-tbody"></tbody>
           </table>
         </div>
+
+        <div id="ledger-pagination" class="ledger-footer-bar"></div>
       </div>
     </section>
 
@@ -252,10 +309,18 @@
             <p class="eyebrow eyebrow--accent">Atención ciudadana</p>
             <h3 class="directory-item-title">Delegación Municipal</h3>
             <p class="directory-item-desc">
-              Constancias locales, trámites vecinales, coordinación de faenas y enlace con el municipio de Yuriria.
+              Constancias locales, trámites vecinales, coordinación de faenas y enlace directo con las familias de Casacuarán.
             </p>
+            <p class="directory-contact-person">Encargado y enlace: Hernando Posadas</p>
+            <a href="tel:+5212245080884" class="directory-contact-phone">+52 1 224 508 0884</a>
             <p class="directory-item-meta">Lunes a viernes &bull; 9:00 a 15:00 h</p>
-            <a href="#comunicados" class="text-action-btn">Consultar avisos vigentes</a>
+            <div class="directory-actions-row">
+              <a href="https://wa.me/5212245080884?text=Hola%20Hernando,%20me%20comunico%20desde%20el%20portal%20Reconstruyendo%20Casacuar%C3%A1n"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 class="text-action-btn">Escribir por WhatsApp &nearr;</a>
+              <a href="#dispatches-block" class="text-share-link">Avisos vigentes</a>
+            </div>
           </div>
 
           <div class="directory-item">
@@ -295,6 +360,11 @@
           <p class="footer-summary">
             Plataforma cívica e informativa dedicada a la transparencia comunitaria, la memoria local y el cuidado de los espacios públicos de San Pablo Casacuarán, Yuriria, Guanajuato.
           </p>
+          <div class="footer-contact-card">
+            <p class="footer-contact-label">Contacto directo y gestión comunitaria</p>
+            <p class="footer-contact-name">Hernando Posadas</p>
+            <a href="tel:+5212245080884" class="footer-contact-phone">+52 1 224 508 0884</a>
+          </div>
         </div>
 
         <div>
@@ -302,23 +372,32 @@
           <ul class="footer-links">
             <li><a href="#nosotros">Nosotros</a></li>
             <li><a href="#comunicados">Historias y Comunicados</a></li>
-            <li><a href="#obras">Registro de Obras</a></li>
+            <li><a href="#dispatches-block">Avisos y Convocatorias</a></li>
+            <li><a href="#obras">Bitácora 2024–2026</a></li>
             <li><a href="#patrimonio">Raíces y Comunidad</a></li>
             <li><a href="#directorio">Directorio</a></li>
           </ul>
         </div>
 
         <div>
-          <h3 class="footer-heading">Administración</h3>
+          <h3 class="footer-heading">Contacto y Administración</h3>
           <ul class="footer-links">
+            <li>
+              <a href="https://wa.me/5212245080884?text=Hola%20Hernando,%20me%20comunico%20desde%20el%20portal%20Reconstruyendo%20Casacuar%C3%A1n"
+                 target="_blank"
+                 rel="noopener noreferrer">WhatsApp: +52 1 224 508 0884 &nearr;</a>
+            </li>
+            <li>
+              <a href="tel:+5212245080884">Llamar a Hernando Posadas</a>
+            </li>
+            <li><a href="https://www.facebook.com/people/Reconstruyendo-Casacuar%C3%A1n/61569069380607/" target="_blank" rel="noopener noreferrer">Facebook Comunitario &nearr;</a></li>
             <li><a href="admin.html">Panel de Gestión</a></li>
-            <li><a href="https://www.facebook.com/people/Reconstruyendo-Casacuar%C3%A1n/61569069380607/" target="_blank" rel="noopener noreferrer">Facebook Comunitario</a></li>
           </ul>
         </div>
       </div>
 
       <div class="footer-bottom">
-        <span>&copy; 2026 Reconstruyendo Casacuarán</span>
+        <span>&copy; 2026 Reconstruyendo Casacuarán &bull; Atención: Hernando Posadas (+52 1 224 508 0884)</span>
         <span>San Pablo Casacuarán &bull; Yuriria, Guanajuato, México</span>
       </div>
     </div>

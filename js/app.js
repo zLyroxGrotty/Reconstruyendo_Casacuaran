@@ -1,13 +1,21 @@
 // ==========================================================================
 // RECONSTRUYENDO CASACUARÁN — Lógica del Portal Público
-// Diseño Editorial y Minimalismo Cívico (City Bureau / Casa Wabi)
+// Diseño Editorial, Galería Visual y Bitácora Histórica Compacta (2024–2026)
 // ==========================================================================
 
 let currentCategory = "todas";
 let currentSearch = "";
 let allPosts = [];
 let siteConfig = {};
-let pendingLocalDraftCount = 0;
+
+// Estado interactivo de la Bitácora Histórica Compacta
+const LEDGER_INITIAL_LIMIT = 10;
+const LEDGER_STEP = 15;
+let ledgerYear = "todos";
+let ledgerCategory = "todas";
+let ledgerIntervention = "todos";
+let ledgerSearch = "";
+let ledgerLimit = LEDGER_INITIAL_LIMIT;
 
 // Redirección automática de tokens de invitación/recuperación de Netlify Identity hacia admin.html
 (function checkNetlifyIdentityRedirect() {
@@ -29,19 +37,19 @@ document.addEventListener("DOMContentLoaded", () => {
 async function initPortal() {
   const data = await DataStore.initFromRemoteOrLocal();
   siteConfig = data.config || DataStore.getConfig();
-  pendingLocalDraftCount = Number(data.localDraftCount || 0);
   allPosts = normalizePublications(data.publications || DataStore.getPosts());
 
-  renderLocalSyncBanner();
   renderUrgentBanner();
   renderStats();
   renderPublications();
+  updateLedgerYearCounts();
   renderWorksTable();
 
   setupHeaderScroll();
   setupMobileMenu();
   setupHeroVideoControl();
   setupFiltersAndSearch();
+  setupLedgerFilters();
   setupActionDelegation();
   setupModalEvents();
 }
@@ -65,19 +73,11 @@ function parseDateTimestamp(dateValue) {
 }
 
 /**
- * Normaliza entradas (asigna ID único, limpia rutas multimedia, infiere portada de video
- * y ordena cronológicamente de la fecha más reciente a la más antigua)
+ * Normaliza entradas (ID único, 8 categorías oficiales, rutas multimedia limpias,
+ * fechas aproximadas mes/año y orden cronológico descendente)
  */
 function normalizePublications(posts) {
   if (!Array.isArray(posts)) return [];
-
-  const categoryLabels = {
-    obras: "Obras Públicas",
-    faenas: "Faenas Comunitarias",
-    salud: "Salud y Bienestar",
-    cultura: "Tradición y Cultura",
-    avisos: "Avisos Delegacionales"
-  };
 
   const statusLabels = {
     completed: "Concluida",
@@ -99,6 +99,17 @@ function normalizePublications(posts) {
     usedIds.add(candidateId);
     post.id = candidateId;
 
+    post.category = typeof resolveCategorySlug === "function"
+      ? resolveCategorySlug(post.category)
+      : (post.category || "infraestructura");
+
+    post.categoryLabel = typeof resolveCategoryLabel === "function"
+      ? resolveCategoryLabel(post.category)
+      : (post.categoryLabel || "Comunidad");
+
+    post.dateApproximate = Boolean(post.dateApproximate);
+    post.interventionType = String(post.interventionType || "").trim() || "Actividad comunitaria";
+
     post.imageUrl = cleanPath(post.imageUrl);
     post.imageFallback = cleanPath(post.imageFallback);
     post.videoUrl = cleanPath(post.videoUrl);
@@ -114,16 +125,13 @@ function normalizePublications(posts) {
       post.imagePending = false;
     }
 
-    if (!post.categoryLabel) {
-      post.categoryLabel = categoryLabels[post.category] || "Comunidad";
-    }
     if (!post.statusLabel) {
       post.statusLabel = statusLabels[post.status] || "Registrada";
     }
     return post;
   });
 
-  // Ordenamiento cronológico descendente: la fecha más reciente siempre aparece primero
+  // Ordenamiento cronológico descendente (más reciente primero)
   normalized.sort((a, b) => {
     const diff = parseDateTimestamp(b.date) - parseDateTimestamp(a.date);
     if (diff !== 0) return diff;
@@ -133,37 +141,12 @@ function normalizePublications(posts) {
   return normalized;
 }
 
-/**
- * Cintillo de sincronización cuando existen borradores guardados solo en el navegador local
- */
-function renderLocalSyncBanner() {
-  const banner = document.getElementById("local-sync-banner");
-  if (!banner) return;
+function hasVisualMedia(post) {
+  return (Boolean(post.imageUrl) && !post.imagePending) || Boolean(post.videoUrl);
+}
 
-  const isWebHost = window.location.protocol === "https:" || window.location.protocol === "http:";
-  if (isWebHost && pendingLocalDraftCount > 0) {
-    const plural = pendingLocalDraftCount === 1
-      ? "1 publicación guardada solo en este navegador"
-      : `${pendingLocalDraftCount} publicaciones guardadas solo en este navegador`;
-
-    banner.hidden = false;
-    banner.innerHTML = `
-      <div class="container urgent-bar-inner">
-        <div class="urgent-bar-lead">
-          <span class="urgent-bar-badge">Borrador Local</span>
-          <span class="urgent-bar-text">Tienes ${escapeHtml(plural)}. Publícalas en la nube para que todos puedan verlas.</span>
-        </div>
-        <div class="urgent-bar-actions">
-          <a href="admin.html?sync=1" class="urgent-bar-link">
-            Publicar en línea ahora &rarr;
-          </a>
-        </div>
-      </div>
-    `;
-  } else {
-    banner.hidden = true;
-    banner.innerHTML = "";
-  }
+function isActiveNoticeOrCall(post) {
+  return post.status === "notice" || post.status === "in_progress" || post.status === "upcoming";
 }
 
 /**
@@ -203,21 +186,24 @@ function renderUrgentBanner() {
 }
 
 /**
- * 2. Cifras documentadas en la sección Nosotros
+ * 2. Cifras reales documentadas en la sección Nosotros
  */
 function renderStats() {
-  const obrasCount = allPosts.filter(p => p.category === "obras").length;
-  const faenasCount = allPosts.filter(p => p.category === "faenas").length;
+  const totalCount = allPosts.length;
+  const obrasFaenasCount = allPosts.filter(
+    p => p.category === "infraestructura" || p.category === "mantenimiento"
+  ).length;
 
+  const totalEl = document.getElementById("stat-total");
   const obrasEl = document.getElementById("stat-obras");
-  const faenasEl = document.getElementById("stat-faenas");
 
-  if (obrasEl) obrasEl.textContent = obrasCount;
-  if (faenasEl) faenasEl.textContent = faenasCount;
+  if (totalEl) totalEl.textContent = totalCount;
+  if (obrasEl) obrasEl.textContent = obrasFaenasCount;
 }
 
 /**
- * 3. Galería de Historias (con imagen/video) + Boletín limpio (solo texto)
+ * 3. Galería de Historias (con foto o video real) + Sección de Avisos y Convocatorias
+ *    (las actividades concluidas históricas sin foto viven en la Bitácora Histórica 2024–2026)
  */
 function renderPublications() {
   const galleryEl = document.getElementById("stories-gallery");
@@ -230,37 +216,78 @@ function renderPublications() {
 
   const query = currentSearch.trim().toLowerCase();
 
-  const filtered = allPosts.filter(post => {
-    const matchesCat = currentCategory === "todas" || post.category === currentCategory;
-    const matchesQuery = !query ||
+  const matchesQueryOnly = (post) => {
+    if (!query) return true;
+    return (
       (post.title && post.title.toLowerCase().includes(query)) ||
       (post.summary && post.summary.toLowerCase().includes(query)) ||
-      (post.location && post.location.toLowerCase().includes(query));
-    return matchesCat && matchesQuery;
-  });
+      (post.location && post.location.toLowerCase().includes(query))
+    );
+  };
 
-  if (filtered.length === 0) {
+  const matchesFilter = (post) => {
+    if (!matchesQueryOnly(post)) return false;
+    if (currentCategory === "todas") return true;
+    if (currentCategory === "avisos") return isActiveNoticeOrCall(post);
+    return post.category === currentCategory;
+  };
+
+  // Si el usuario pulsa el filtro "Avisos", enfocamos directamente la lista de Avisos y Convocatorias
+  const visualPosts = currentCategory === "avisos"
+    ? []
+    : allPosts.filter(p => hasVisualMedia(p) && matchesFilter(p));
+
+  const activeTextNotices = allPosts.filter(
+    p => !hasVisualMedia(p) && isActiveNoticeOrCall(p) && matchesFilter(p)
+  );
+
+  if (visualPosts.length === 0 && activeTextNotices.length === 0) {
     galleryEl.innerHTML = "";
     galleryEl.hidden = true;
     dispatchesList.innerHTML = "";
     dispatchesBlock.hidden = true;
-    if (emptyEl) emptyEl.hidden = false;
+
+    if (emptyEl) {
+      const ledgerMatchesCount = currentCategory === "avisos"
+        ? 0
+        : allPosts.filter(p => (currentCategory === "todas" || p.category === currentCategory) && matchesQueryOnly(p)).length;
+      emptyEl.hidden = false;
+
+      if (ledgerMatchesCount > 0) {
+        const catLabel = currentCategory === "todas"
+          ? "esa búsqueda"
+          : resolveCategoryLabel(currentCategory);
+        emptyEl.innerHTML = `
+          <div class="empty-bridge-box">
+            <p class="empty-bridge-text">
+              Aún no se han subido fotografías ni avisos vigentes en <strong>${escapeHtml(catLabel)}</strong>, pero existen <strong>${ledgerMatchesCount} actividades registradas</strong> en el archivo histórico.
+            </p>
+            <button type="button"
+                    class="text-action-btn"
+                    data-action="jump-to-ledger"
+                    data-category="${escapeHtml(currentCategory)}"
+                    data-query="${escapeHtml(currentSearch)}">
+              Ver las ${ledgerMatchesCount} actividades en la Bitácora Histórica &darr;
+            </button>
+          </div>
+        `;
+      } else {
+        emptyEl.textContent = "No se encontraron historias ni avisos vigentes con ese criterio de búsqueda.";
+      }
+    }
     return;
   }
 
-  if (emptyEl) emptyEl.hidden = true;
+  if (emptyEl) {
+    emptyEl.hidden = true;
+    emptyEl.innerHTML = "";
+  }
 
-  const hasVisualMedia = (post) =>
-    (Boolean(post.imageUrl) && !post.imagePending) || Boolean(post.videoUrl);
-
-  const visualPosts = filtered.filter(hasVisualMedia);
-  const textPosts = filtered.filter(p => !hasVisualMedia(p));
-
-  // Renderizar galería visual
+  // Renderizar galería visual (solo tarjetas con foto o video real)
   if (visualPosts.length > 0) {
     galleryEl.hidden = false;
     galleryEl.innerHTML = visualPosts.map(post => {
-      const formattedDate = formatDate(post.date);
+      const formattedDate = formatDate(post.date, post.dateApproximate);
       const explicitPosterOrImage = post.videoUrl
         ? (post.videoPoster || (!post.imagePending ? post.imageUrl : ""))
         : post.imageUrl;
@@ -339,23 +366,23 @@ function renderPublications() {
     galleryEl.hidden = true;
   }
 
-  // Renderizar comunicados tipográficos sin recuadros vacíos
-  if (textPosts.length > 0) {
+  // Renderizar sección Avisos y Convocatorias (siempre con su encabezado visible)
+  if (activeTextNotices.length > 0) {
     dispatchesBlock.hidden = false;
     dispatchesBlock.classList.toggle("dispatches-block--standalone", visualPosts.length === 0);
     if (dispatchesHeading) {
-      dispatchesHeading.hidden = visualPosts.length === 0;
+      dispatchesHeading.hidden = false;
     }
 
-    dispatchesList.innerHTML = textPosts.map(post => {
-      const formattedDate = formatDate(post.date);
+    dispatchesList.innerHTML = activeTextNotices.map(post => {
+      const formattedDate = formatDate(post.date, post.dateApproximate);
       const whatsappHref = buildWhatsAppLink(post);
 
       return `
         <article class="dispatch-row">
           <div class="dispatch-date">
             ${formattedDate}
-            <span class="dispatch-cat">${escapeHtml(post.categoryLabel)}</span>
+            <span class="dispatch-cat">${escapeHtml(post.statusLabel || post.categoryLabel)}</span>
           </div>
 
           <div>
@@ -384,9 +411,6 @@ function renderPublications() {
   }
 }
 
-/**
- * Asegura que los videos sin portada explícita muestren un fotograma válido en móvil y escritorio
- */
 function hydrateVideoThumbnails(container) {
   container.querySelectorAll("video.story-video-thumb").forEach(vid => {
     vid.addEventListener("loadedmetadata", () => {
@@ -398,39 +422,168 @@ function hydrateVideoThumbnails(container) {
 }
 
 /**
- * 4. Registro abierto de obras y faenas (ordenado cronológicamente a través de allPosts)
+ * 4. Bitácora Histórica Compacta 2024–2026 (10 renglones iniciales + filtros + buscador)
  */
+function updateLedgerYearCounts() {
+  const yearBtns = document.querySelectorAll(".ledger-year-btn");
+  const counts = { todos: allPosts.length, "2026": 0, "2025": 0, "2024": 0 };
+
+  allPosts.forEach(p => {
+    const yr = String(p.date || "").slice(0, 4);
+    if (counts[yr] !== undefined) counts[yr] += 1;
+  });
+
+  yearBtns.forEach(btn => {
+    const yr = btn.getAttribute("data-year") || "todos";
+    const labelBase = yr === "todos" ? "Todos" : yr;
+    const count = counts[yr] !== undefined ? counts[yr] : 0;
+    btn.textContent = `${labelBase} (${count})`;
+  });
+}
+
+function getFilteredLedgerPosts() {
+  const q = ledgerSearch.trim().toLowerCase();
+
+  return allPosts.filter(post => {
+    const postYear = String(post.date || "").slice(0, 4);
+    if (ledgerYear !== "todos" && postYear !== ledgerYear) return false;
+    if (ledgerCategory !== "todas" && post.category !== ledgerCategory) return false;
+    if (ledgerIntervention !== "todos" && post.interventionType !== ledgerIntervention) return false;
+
+    if (q) {
+      const haystack = `${post.title || ""} ${post.categoryLabel || ""} ${post.location || ""} ${post.interventionType || ""} ${post.date || ""}`.toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
 function renderWorksTable() {
   const tbody = document.getElementById("obras-tbody");
+  const countLabel = document.getElementById("ledger-count-label");
+  const paginationEl = document.getElementById("ledger-pagination");
   if (!tbody) return;
 
-  const works = allPosts.filter(p => p.category === "obras" || p.category === "faenas");
+  const matching = getFilteredLedgerPosts();
+  const visible = matching.slice(0, ledgerLimit);
 
-  if (works.length === 0) {
+  if (countLabel) {
+    countLabel.textContent = matching.length === 0
+      ? "0 registros encontrados"
+      : `Mostrando ${visible.length} de ${matching.length} registros`;
+  }
+
+  if (matching.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="5">No hay obras o faenas registradas por el momento.</td>
+        <td colspan="5">No se encontraron actividades con esos filtros.</td>
       </tr>
     `;
+    if (paginationEl) {
+      paginationEl.innerHTML = `
+        <button type="button" class="text-action-btn" data-action="ledger-reset-filters">
+          Limpiar filtros de la bitácora
+        </button>
+      `;
+    }
     return;
   }
 
-  tbody.innerHTML = works.map(post => {
-    const statusClass = `works-status works-status--${escapeHtml(post.status || "notice")}`;
+  tbody.innerHTML = visible.map(post => {
+    const dateText = formatCompactDate(post.date, post.dateApproximate);
+    const dateClass = post.dateApproximate ? "works-date works-date--approx" : "works-date";
+    const mediaBadge = post.videoUrl
+      ? `<span class="works-media-flag">Video</span>`
+      : (hasVisualMedia(post) ? `<span class="works-media-flag">Foto</span>` : "");
+
     return `
       <tr>
-        <td class="works-date">${formatDate(post.date)}</td>
-        <td class="works-name">${escapeHtml(post.title)}</td>
-        <td>${escapeHtml(post.location || "San Pablo Casacuarán")}</td>
-        <td><span class="${statusClass}">${escapeHtml(post.statusLabel)}</span></td>
+        <td class="${dateClass}" title="${post.dateApproximate ? "Mes registrado por secuencia histórica" : "Fecha registrada"}">${escapeHtml(dateText)}</td>
+        <td class="works-name">
+          <button type="button" class="story-title-btn" data-action="open-post" data-id="${post.id}">
+            ${escapeHtml(post.title)}
+          </button>${mediaBadge}
+        </td>
+        <td class="works-cat-cell">${escapeHtml(post.categoryLabel)}</td>
+        <td class="works-type-cell">${escapeHtml(post.interventionType)}</td>
         <td>
           <button type="button" class="text-action-btn" data-action="open-post" data-id="${post.id}">
-            Consultar &rarr;
+            Ver &rarr;
           </button>
         </td>
       </tr>
     `;
   }).join("");
+
+  if (paginationEl) {
+    const remaining = matching.length - visible.length;
+    const nextStep = Math.min(LEDGER_STEP, remaining);
+
+    let buttonsHtml = '<div class="ledger-footer-actions">';
+    if (remaining > 0) {
+      buttonsHtml += `
+        <button type="button" class="text-action-btn" data-action="ledger-more">
+          Mostrar ${nextStep} más &darr;
+        </button>
+      `;
+      if (remaining > LEDGER_STEP) {
+        buttonsHtml += `
+          <button type="button" class="text-share-link text-action-btn" data-action="ledger-all">
+            Ver todos (${matching.length})
+          </button>
+        `;
+      }
+    }
+    if (visible.length > LEDGER_INITIAL_LIMIT) {
+      buttonsHtml += `
+        <button type="button" class="text-action-btn" data-action="ledger-collapse">
+          Contraer a ${LEDGER_INITIAL_LIMIT} recientes &uarr;
+        </button>
+      `;
+    }
+    buttonsHtml += "</div>";
+    paginationEl.innerHTML = buttonsHtml;
+  }
+}
+
+function setupLedgerFilters() {
+  const yearBtns = document.querySelectorAll(".ledger-year-btn");
+  yearBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      yearBtns.forEach(b => b.setAttribute("aria-pressed", "false"));
+      btn.setAttribute("aria-pressed", "true");
+      ledgerYear = btn.getAttribute("data-year") || "todos";
+      ledgerLimit = LEDGER_INITIAL_LIMIT;
+      renderWorksTable();
+    });
+  });
+
+  const catSelect = document.getElementById("ledger-category");
+  if (catSelect) {
+    catSelect.addEventListener("change", (e) => {
+      ledgerCategory = e.target.value || "todas";
+      ledgerLimit = LEDGER_INITIAL_LIMIT;
+      renderWorksTable();
+    });
+  }
+
+  const typeSelect = document.getElementById("ledger-intervention");
+  if (typeSelect) {
+    typeSelect.addEventListener("change", (e) => {
+      ledgerIntervention = e.target.value || "todos";
+      ledgerLimit = LEDGER_INITIAL_LIMIT;
+      renderWorksTable();
+    });
+  }
+
+  const searchInput = document.getElementById("ledger-search");
+  if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+      ledgerSearch = e.target.value || "";
+      ledgerLimit = LEDGER_INITIAL_LIMIT;
+      renderWorksTable();
+    });
+  }
 }
 
 /**
@@ -510,10 +663,10 @@ function setupMobileMenu() {
 }
 
 /**
- * 7. Filtros y buscador
+ * 7. Filtros y buscador de Historias Destacadas
  */
 function setupFiltersAndSearch() {
-  const filterBtns = document.querySelectorAll(".filter-link");
+  const filterBtns = document.querySelectorAll("#comunicados .filter-link");
   filterBtns.forEach(btn => {
     btn.addEventListener("click", () => {
       filterBtns.forEach(b => b.setAttribute("aria-pressed", "false"));
@@ -530,6 +683,22 @@ function setupFiltersAndSearch() {
       renderPublications();
     });
   }
+
+  // Asegurar que los enlaces hacia #dispatches-block muestren siempre Avisos y Convocatorias
+  document.querySelectorAll('a[href="#dispatches-block"]').forEach(link => {
+    link.addEventListener("click", () => {
+      const dispatchesBlock = document.getElementById("dispatches-block");
+      if (dispatchesBlock && dispatchesBlock.hidden) {
+        currentCategory = "todas";
+        currentSearch = "";
+        if (searchInput) searchInput.value = "";
+        filterBtns.forEach(b => {
+          b.setAttribute("aria-pressed", b.getAttribute("data-category") === "todas" ? "true" : "false");
+        });
+        renderPublications();
+      }
+    });
+  });
 }
 
 /**
@@ -547,6 +716,23 @@ function setupActionDelegation() {
     } else if (action === "dismiss-urgent") {
       sessionStorage.setItem("casacuaran_urgent_dismissed", "1");
       renderUrgentBanner();
+    } else if (action === "ledger-more") {
+      ledgerLimit += LEDGER_STEP;
+      renderWorksTable();
+    } else if (action === "ledger-all") {
+      ledgerLimit = allPosts.length + 50;
+      renderWorksTable();
+    } else if (action === "ledger-collapse") {
+      ledgerLimit = LEDGER_INITIAL_LIMIT;
+      renderWorksTable();
+      const section = document.getElementById("obras");
+      if (section) section.scrollIntoView({ behavior: "smooth" });
+    } else if (action === "ledger-reset-filters") {
+      resetLedgerFilters();
+    } else if (action === "jump-to-ledger") {
+      const targetCat = trigger.getAttribute("data-category") || "todas";
+      const targetQuery = trigger.getAttribute("data-query") || "";
+      applyLedgerJump(targetCat, targetQuery);
     }
   });
 
@@ -562,8 +748,45 @@ function setupActionDelegation() {
   });
 }
 
+function resetLedgerFilters() {
+  ledgerYear = "todos";
+  ledgerCategory = "todas";
+  ledgerIntervention = "todos";
+  ledgerSearch = "";
+  ledgerLimit = LEDGER_INITIAL_LIMIT;
+
+  document.querySelectorAll(".ledger-year-btn").forEach(btn => {
+    btn.setAttribute("aria-pressed", btn.getAttribute("data-year") === "todos" ? "true" : "false");
+  });
+
+  const catSelect = document.getElementById("ledger-category");
+  const typeSelect = document.getElementById("ledger-intervention");
+  const searchInput = document.getElementById("ledger-search");
+
+  if (catSelect) catSelect.value = "todas";
+  if (typeSelect) typeSelect.value = "todos";
+  if (searchInput) searchInput.value = "";
+
+  renderWorksTable();
+}
+
+function applyLedgerJump(cat, query) {
+  resetLedgerFilters();
+  ledgerCategory = cat;
+  ledgerSearch = query;
+
+  const catSelect = document.getElementById("ledger-category");
+  const searchInput = document.getElementById("ledger-search");
+  if (catSelect) catSelect.value = cat;
+  if (searchInput) searchInput.value = query;
+
+  renderWorksTable();
+  const section = document.getElementById("obras");
+  if (section) section.scrollIntoView({ behavior: "smooth" });
+}
+
 /**
- * 9. Modal de lectura (<dialog>) con soporte para videos horizontales y verticales 9:16
+ * 9. Modal de lectura (<dialog>) con soporte para videos horizontales/verticales y fechas mensuales
  */
 function openPostModal(id) {
   const post = allPosts.find(p => p.id === id);
@@ -575,7 +798,7 @@ function openPostModal(id) {
   if (!dialog || !contentArea) return;
 
   if (categoryEl) {
-    categoryEl.textContent = post.categoryLabel || "Comunicado";
+    categoryEl.textContent = post.categoryLabel || "Actividad Comunitaria";
   }
 
   let mediaHtml = "";
@@ -613,12 +836,14 @@ function openPostModal(id) {
   }
 
   const whatsappHref = buildWhatsAppLink(post);
+  const dateDisplay = formatDate(post.date, post.dateApproximate) +
+    (post.dateApproximate ? " (registro mensual)" : "");
 
   contentArea.innerHTML = `
     <p class="eyebrow">
-      ${formatDate(post.date)}
+      ${escapeHtml(dateDisplay)}
       ${post.location ? ` &nbsp;&bull;&nbsp; ${escapeHtml(post.location)}` : ""}
-      ${post.statusLabel ? ` &nbsp;&bull;&nbsp; ${escapeHtml(post.statusLabel)}` : ""}
+      ${post.interventionType ? ` &nbsp;&bull;&nbsp; ${escapeHtml(post.interventionType)}` : ""}
     </p>
 
     <h2 id="modal-title" class="modal-title">${escapeHtml(post.title)}</h2>
@@ -670,7 +895,7 @@ function setupModalEvents() {
 }
 
 /**
- * Helpers
+ * Helpers de formato y URLs
  */
 function encodeMediaUrl(url) {
   if (!url) return "";
@@ -694,7 +919,7 @@ function buildWhatsAppLink(post) {
   return `https://wa.me/?text=${encodeURIComponent(message)}`;
 }
 
-function formatDate(dateStr) {
+function formatDate(dateStr, approximate = false) {
   if (!dateStr) return "";
   try {
     const clean = String(dateStr).split("T")[0];
@@ -705,7 +930,34 @@ function formatDate(dateStr) {
     ];
     const m = months[parseInt(month, 10) - 1];
     if (!m) return dateStr;
+    if (approximate) {
+      return `${m.charAt(0).toUpperCase() + m.slice(1)} ${year}`;
+    }
     return `${parseInt(day, 10)} ${m} ${year}`;
+  } catch (e) {
+    return dateStr;
+  }
+}
+
+function formatCompactDate(dateStr, approximate = false) {
+  if (!dateStr) return "";
+  try {
+    const clean = String(dateStr).split("T")[0];
+    const [year, month, day] = clean.split("-");
+    const fullMonths = [
+      "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+    const shortMonths = [
+      "ene", "feb", "mar", "abr", "may", "jun",
+      "jul", "ago", "sep", "oct", "nov", "dic"
+    ];
+    const idx = parseInt(month, 10) - 1;
+    if (idx < 0 || idx > 11) return dateStr;
+    if (approximate) {
+      return `${fullMonths[idx]} ${year}`;
+    }
+    return `${parseInt(day, 10)} ${shortMonths[idx]} ${year}`;
   } catch (e) {
     return dateStr;
   }

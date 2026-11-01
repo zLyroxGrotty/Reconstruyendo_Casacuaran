@@ -12,6 +12,11 @@ let cloudPosts = [];
 let editingPostId = null;
 let isBusy = false;
 
+const ADMIN_TABLE_STEP = 15;
+let adminSearchQuery = "";
+let adminFilterCat = "todas";
+let adminVisibleLimit = ADMIN_TABLE_STEP;
+
 // Estado de archivos seleccionados en el formulario actual
 let pendingImageBlob = null;
 let pendingImageName = "";
@@ -57,18 +62,19 @@ function initIdentityAndPanel() {
 
   setupFormsAndControls();
 
-  // Modo desarrollo local (file:// o localhost) permite previsualizar la interfaz
+  // Modo desarrollo local (file:// o localhost) permite previsualizar y probar la interfaz sin bloqueo
   const isLocalDev =
     window.location.protocol === "file:" ||
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1";
 
+  if (isLocalDev) {
+    unlockWorkspace(null);
+    return;
+  }
+
   if (!window.netlifyIdentity) {
-    if (isLocalDev) {
-      unlockWorkspace(null);
-    } else {
-      showAuthGate();
-    }
+    showAuthGate();
     return;
   }
 
@@ -81,7 +87,7 @@ function initIdentityAndPanel() {
   }
 
   window.netlifyIdentity.on("init", (user) => {
-    if (user || isLocalDev) {
+    if (user) {
       unlockWorkspace(user);
     } else {
       showAuthGate();
@@ -191,7 +197,9 @@ function sortPostsChronologically(posts) {
   return [...posts].sort((a, b) => {
     const da = String(a && a.date ? a.date : "").split("T")[0];
     const db = String(b && b.date ? b.date : "").split("T")[0];
-    return db.localeCompare(da);
+    const cmp = db.localeCompare(da);
+    if (cmp !== 0) return cmp;
+    return (Number(b && b.id) || 0) - (Number(a && a.id) || 0);
   });
 }
 
@@ -248,8 +256,41 @@ function setupFormsAndControls() {
     cancelBtn.addEventListener("click", resetPostForm);
   }
 
-  // Acciones Editar / Eliminar de la tabla
+  // Buscador y filtro rápido de la tabla de registros
+  const adminSearch = document.getElementById("admin-search-input");
+  if (adminSearch) {
+    adminSearch.addEventListener("input", (e) => {
+      adminSearchQuery = e.target.value || "";
+      adminVisibleLimit = ADMIN_TABLE_STEP;
+      renderRegisteredTable();
+    });
+  }
+
+  const adminCatSelect = document.getElementById("admin-filter-cat");
+  if (adminCatSelect) {
+    adminCatSelect.addEventListener("change", (e) => {
+      adminFilterCat = e.target.value || "todas";
+      adminVisibleLimit = ADMIN_TABLE_STEP;
+      renderRegisteredTable();
+    });
+  }
+
+  // Acciones Editar / Eliminar / Paginación de la tabla
   document.addEventListener("click", (e) => {
+    const pageBtn = e.target.closest("[data-admin-page]");
+    if (pageBtn) {
+      const mode = pageBtn.getAttribute("data-admin-page");
+      if (mode === "more") {
+        adminVisibleLimit += 20;
+      } else if (mode === "all") {
+        adminVisibleLimit = cloudPosts.length + 50;
+      } else if (mode === "collapse") {
+        adminVisibleLimit = ADMIN_TABLE_STEP;
+      }
+      renderRegisteredTable();
+      return;
+    }
+
     const actionBtn = e.target.closest("[data-admin-action]");
     if (!actionBtn || isBusy) return;
 
@@ -631,8 +672,11 @@ async function handlePostSubmit(e) {
   if (isBusy) return;
 
   const title = document.getElementById("post-title").value.trim();
-  const category = document.getElementById("post-category").value;
+  const category = resolveCategorySlug(document.getElementById("post-category").value);
   const date = document.getElementById("post-date").value || getTodayIsoDate();
+  const dateApproximate = Boolean(document.getElementById("post-date-approx") && document.getElementById("post-date-approx").checked);
+  const interventionEl = document.getElementById("post-intervention");
+  const interventionType = interventionEl ? interventionEl.value : "Actividad comunitaria";
   const location = document.getElementById("post-location").value.trim();
   const status = document.getElementById("post-status").value;
   const summary = document.getElementById("post-summary").value.trim();
@@ -712,7 +756,9 @@ async function handlePostSubmit(e) {
           title,
           category,
           categoryLabel: getCategoryLabel(category),
+          interventionType,
           date,
+          dateApproximate,
           status,
           statusLabel: getStatusLabel(status),
           summary,
@@ -774,8 +820,12 @@ function startEditingPost(id) {
   editingPostId = Number(post.id);
 
   document.getElementById("post-title").value = post.title || "";
-  document.getElementById("post-category").value = post.category || "obras";
+  document.getElementById("post-category").value = resolveCategorySlug(post.category);
   document.getElementById("post-date").value = String(post.date || getTodayIsoDate()).split("T")[0];
+  const approxCheck = document.getElementById("post-date-approx");
+  if (approxCheck) approxCheck.checked = Boolean(post.dateApproximate);
+  const interventionEl = document.getElementById("post-intervention");
+  if (interventionEl && post.interventionType) interventionEl.value = post.interventionType;
   document.getElementById("post-location").value = post.location || "";
   document.getElementById("post-status").value = post.status || "completed";
   document.getElementById("post-summary").value = post.summary || "";
@@ -847,6 +897,9 @@ function resetPostForm() {
   const dateInput = document.getElementById("post-date");
   if (dateInput) dateInput.value = getTodayIsoDate();
 
+  const approxEl = document.getElementById("post-date-approx");
+  if (approxEl) approxEl.checked = false;
+
   clearImageSelection();
   clearVideoSelection();
 
@@ -859,40 +912,88 @@ function resetPostForm() {
   if (submitBtn) submitBtn.textContent = "Publicar en el Portal";
 }
 
+function formatAdminDate(dateString, isApproximate) {
+  if (!dateString) return "";
+  const cleanIso = String(dateString).split("T")[0];
+  const parts = cleanIso.split("-");
+  if (parts.length !== 3) return cleanIso;
+  const year = parts[0];
+  const monthIdx = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+  const monthsShort = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+  const monthsFull = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+  if (isApproximate) {
+    return `${monthsFull[monthIdx] || parts[1]} ${year}`;
+  }
+  return `${day} ${monthsShort[monthIdx] || parts[1]} ${year}`;
+}
+
 function renderRegisteredTable() {
   const tbody = document.getElementById("admin-tbody");
   const countLabel = document.getElementById("posts-count-label");
+  const paginationEl = document.getElementById("admin-pagination");
   if (!tbody) return;
 
-  if (countLabel) {
-    countLabel.textContent = `${cloudPosts.length} publicaciones en línea`;
-  }
+  const query = adminSearchQuery.trim().toLowerCase();
+  const filtered = cloudPosts.filter(post => {
+    const slug = typeof resolveCategorySlug === "function"
+      ? resolveCategorySlug(post.category)
+      : post.category;
+    const catOk = adminFilterCat === "todas" || slug === adminFilterCat;
+    if (!catOk) return false;
 
-  if (cloudPosts.length === 0) {
+    if (!query) return true;
+    const catLabel = post.categoryLabel || getCategoryLabel(slug);
+    const haystack = [
+      post.title || "",
+      post.location || "",
+      catLabel,
+      post.interventionType || "",
+      post.summary || "",
+      post.date || ""
+    ].join(" ").toLowerCase();
+    return haystack.includes(query);
+  });
+
+  if (filtered.length === 0) {
+    if (countLabel) {
+      countLabel.textContent = `0 de ${cloudPosts.length} registros`;
+    }
     tbody.innerHTML = `
       <tr>
         <td colspan="5" class="admin-table-empty">
-          No hay publicaciones registradas por el momento.
+          No se encontraron registros con los filtros actuales.
         </td>
       </tr>
     `;
+    if (paginationEl) paginationEl.innerHTML = "";
     return;
   }
 
-  tbody.innerHTML = cloudPosts.map(post => {
+  const visible = filtered.slice(0, adminVisibleLimit);
+  if (countLabel) {
+    countLabel.textContent = `Mostrando ${visible.length} de ${filtered.length} registros`;
+  }
+
+  tbody.innerHTML = visible.map(post => {
+    const slug = typeof resolveCategorySlug === "function"
+      ? resolveCategorySlug(post.category)
+      : post.category;
     const mediaTag = post.videoUrl
       ? "Video"
-      : (post.imageUrl && !post.imagePending ? "Foto" : "Aviso");
+      : (post.imageUrl && !post.imagePending ? "Foto" : "Bitácora");
+    const displayDate = formatAdminDate(post.date, Boolean(post.dateApproximate));
+    const displayType = post.interventionType || post.statusLabel || getStatusLabel(post.status);
 
     return `
       <tr>
-        <td class="admin-table-date">${escapeHtml(String(post.date || "").split("T")[0])}</td>
+        <td class="admin-table-date">${escapeHtml(displayDate)}</td>
         <td class="admin-table-title">
           ${escapeHtml(post.title)}
           <span class="admin-media-tag">${mediaTag}</span>
         </td>
-        <td>${escapeHtml(post.categoryLabel || getCategoryLabel(post.category))}</td>
-        <td>${escapeHtml(post.statusLabel || getStatusLabel(post.status))}</td>
+        <td>${escapeHtml(post.categoryLabel || getCategoryLabel(slug))}</td>
+        <td>${escapeHtml(displayType)}</td>
         <td class="admin-table-actions">
           <button type="button" class="btn-secondary-action admin-btn-small" data-admin-action="edit" data-id="${post.id}">
             Editar
@@ -904,6 +1005,40 @@ function renderRegisteredTable() {
       </tr>
     `;
   }).join("");
+
+  if (paginationEl) {
+    const remaining = filtered.length - visible.length;
+    const nextBatch = Math.min(20, remaining);
+    const buttons = [];
+
+    if (remaining > 0) {
+      buttons.push(`
+        <button type="button" class="btn-secondary-action ledger-more-btn" data-admin-page="more">
+          Mostrar ${nextBatch} más ↓
+        </button>
+      `);
+      if (remaining > 20) {
+        buttons.push(`
+          <button type="button" class="btn-secondary-action ledger-more-btn" data-admin-page="all">
+            Ver todos (${filtered.length})
+          </button>
+        `);
+      }
+    }
+
+    if (visible.length > ADMIN_TABLE_STEP) {
+      buttons.push(`
+        <button type="button" class="btn-secondary-action ledger-more-btn" data-admin-page="collapse">
+          Contraer a ${ADMIN_TABLE_STEP} recientes ↑
+        </button>
+      `);
+    }
+
+    paginationEl.innerHTML = `
+      <span class="ledger-count-info">Mostrando <strong>${visible.length}</strong> de <strong>${filtered.length}</strong> actividades</span>
+      <div class="ledger-pagination-actions">${buttons.join("")}</div>
+    `;
+  }
 }
 
 /**
@@ -914,8 +1049,24 @@ async function commitChangesToCloud({ filesToUpload, mutateSiteData, commitMessa
     if (typeof onProgress === "function") onProgress(pct, msg);
   };
 
+  const isLocalDev =
+    window.location.protocol === "file:" ||
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1";
+
   const token = await getNetlifyJwt();
   if (!token) {
+    if (isLocalDev) {
+      report(60, "Guardando cambios en vista previa local...");
+      const localCopy = JSON.parse(JSON.stringify({
+        config: cloudConfig,
+        publications: cloudPosts
+      }));
+      const updatedLocal = mutateSiteData(localCopy);
+      report(100, "¡Guardado localmente en el navegador!");
+      applyUpdatedDataLocally(updatedLocal);
+      return;
+    }
     if (window.netlifyIdentity) {
       window.netlifyIdentity.open("login");
     }
@@ -1310,21 +1461,17 @@ function base64ToUtf8(b64) {
 }
 
 function getCategoryLabel(category) {
-  switch (category) {
-    case "obras": return "Obras Públicas";
-    case "faenas": return "Faenas Comunitarias";
-    case "salud": return "Salud y Bienestar";
-    case "cultura": return "Tradición y Cultura";
-    case "avisos": return "Avisos Delegacionales";
-    default: return "Comunidad";
+  if (typeof resolveCategoryLabel === "function") {
+    return resolveCategoryLabel(category);
   }
+  return "Infraestructura y servicios";
 }
 
 function getStatusLabel(status) {
   switch (status) {
     case "completed": return "Concluida";
-    case "in_progress": return "En ejecución";
-    case "upcoming": return "En preparación";
+    case "in_progress": return "Convocatoria Abierta";
+    case "upcoming": return "Próximo Evento";
     case "notice": return "Aviso Oficial";
     default: return "Registrada";
   }

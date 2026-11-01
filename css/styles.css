@@ -902,6 +902,151 @@ button, input, select, textarea {
 .works-status--in_progress { color: var(--accent); }
 .works-status--upcoming { color: var(--ink-muted); }
 
+.ledger-intro-note {
+  margin-top: 0.55rem;
+  font-size: 0.9rem;
+  color: var(--ink-muted);
+  max-width: 62ch;
+  line-height: 1.55;
+}
+
+.ledger-year-nav {
+  margin-bottom: 1.35rem;
+}
+
+.ledger-filter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.35rem;
+}
+
+.ledger-select-group {
+  display: flex;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.ledger-select {
+  border: 1px solid var(--hairline-strong);
+  background-color: var(--bg-white);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  padding: 0.52rem 0.85rem;
+  min-width: 215px;
+  cursor: pointer;
+}
+
+.ledger-select:focus {
+  outline: none;
+  border-color: var(--ink);
+}
+
+.ledger-results-meta {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+/* Versión compacta para no alargar la página con la base histórica */
+.works-table--compact td {
+  padding: 0.82rem 1rem 0.82rem 0;
+  font-size: 0.88rem;
+}
+
+.works-table--compact .works-name {
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.works-date--approx {
+  font-style: italic;
+}
+
+.works-cat-cell {
+  font-size: 0.8rem;
+  color: var(--ink-body);
+}
+
+.works-type-cell {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.works-media-flag {
+  display: inline-block;
+  margin-left: 0.45rem;
+  padding: 0.08rem 0.38rem;
+  font-family: var(--font-sans);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  vertical-align: middle;
+}
+
+.ledger-footer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  padding-top: 1.5rem;
+}
+
+.ledger-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.empty-bridge-box {
+  padding: 2.5rem 0;
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.empty-bridge-text {
+  font-size: 0.96rem;
+  color: var(--ink-body);
+  margin-bottom: 0.85rem;
+}
+
+.admin-table-toolbar {
+  display: flex;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.admin-toolbar-input {
+  flex: 1;
+  min-width: 220px;
+}
+
+.admin-toolbar-select {
+  min-width: 220px;
+  width: auto;
+}
+
+.admin-approx-row {
+  margin-top: 0.45rem;
+}
+
 /* --------------------------------------------------------------------------
    10. RAÍCES, TERRITORIO Y COMUNIDAD MIGRANTE (ESTILO CASA WABI)
    -------------------------------------------------------------------------- */
@@ -1010,6 +1155,71 @@ button, input, select, textarea {
   font-size: 0.82rem;
   color: var(--ink-muted);
   margin-bottom: 1.25rem;
+}
+
+.directory-contact-person {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 0.3rem;
+}
+
+.directory-contact-phone {
+  display: inline-block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 0.35rem;
+}
+
+.directory-contact-phone:hover {
+  text-decoration: underline;
+}
+
+.directory-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.footer-contact-card {
+  margin-top: 1.25rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.footer-contact-label {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(244, 243, 239, 0.55);
+  margin-bottom: 0.3rem;
+}
+
+.footer-contact-name {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--bg-white);
+  margin-bottom: 0.2rem;
+}
+
+.footer-contact-phone {
+  display: inline-block;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #F28B7D;
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.footer-contact-phone:hover {
+  color: var(--bg-white);
+  text-decoration: underline;
 }
 
 .site-footer {

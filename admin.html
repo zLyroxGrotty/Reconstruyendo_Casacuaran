@@ -120,38 +120,56 @@
                 <div class="admin-form-group">
                   <label for="post-category" class="admin-form-label">Categoría *</label>
                   <select id="post-category" class="admin-form-select" required>
-                    <option value="obras">Obras Públicas</option>
-                    <option value="faenas">Faenas Comunitarias</option>
-                    <option value="salud">Salud y Bienestar</option>
-                    <option value="cultura">Tradición y Cultura</option>
-                    <option value="avisos">Avisos Delegacionales</option>
+                    <option value="infraestructura">Infraestructura y servicios</option>
+                    <option value="mantenimiento">Medio ambiente y mantenimiento</option>
+                    <option value="cultura">Cultura, tradiciones y festividades</option>
+                    <option value="eventos">Eventos comunitarios y recaudación</option>
+                    <option value="bienestar">Apoyo social y bienestar</option>
+                    <option value="deporte">Deporte y recreación</option>
+                    <option value="participacion">Participación y formación</option>
+                    <option value="comunicacion">Comunicación y vinculación</option>
                   </select>
                 </div>
 
                 <div class="admin-form-group">
                   <label for="post-date" class="admin-form-label">Fecha del Suceso *</label>
                   <input type="date" id="post-date" class="admin-form-input" required>
+                  <label class="admin-check-label admin-approx-row">
+                    <input type="checkbox" id="post-date-approx" class="admin-checkbox">
+                    <span>Mostrar solo Mes y Año (fecha aproximada)</span>
+                  </label>
                 </div>
               </div>
 
               <div class="admin-two-col">
                 <div class="admin-form-group">
-                  <label for="post-location" class="admin-form-label">Ubicación en Casacuarán</label>
-                  <input type="text"
-                         id="post-location"
-                         class="admin-form-input"
-                         placeholder="Ej. Jardín Principal, Domo, Calle Hidalgo">
+                  <label for="post-intervention" class="admin-form-label">Tipo de Intervención</label>
+                  <select id="post-intervention" class="admin-form-select">
+                    <option value="Obra o mantenimiento">Obra o mantenimiento</option>
+                    <option value="Gestión y coordinación">Gestión y coordinación</option>
+                    <option value="Apoyo comunitario">Apoyo comunitario</option>
+                    <option value="Evento o actividad">Evento o actividad</option>
+                    <option value="Comunicación institucional">Comunicación institucional</option>
+                  </select>
                 </div>
 
                 <div class="admin-form-group">
-                  <label for="post-status" class="admin-form-label">Estatus</label>
+                  <label for="post-status" class="admin-form-label">Estatus / Destino</label>
                   <select id="post-status" class="admin-form-select">
-                    <option value="completed">Concluida</option>
-                    <option value="in_progress">En ejecución / Convocatoria</option>
-                    <option value="upcoming">En preparación / Próximamente</option>
-                    <option value="notice">Aviso Oficial</option>
+                    <option value="completed">Concluida (Bitácora / Tarjeta si lleva foto)</option>
+                    <option value="notice">Aviso Oficial (aparece en Avisos y Convocatorias)</option>
+                    <option value="in_progress">Convocatoria Abierta (aparece en Avisos y Convocatorias)</option>
+                    <option value="upcoming">Próximo Evento / Invitación (aparece en Avisos y Convocatorias)</option>
                   </select>
                 </div>
+              </div>
+
+              <div class="admin-form-group">
+                <label for="post-location" class="admin-form-label">Ubicación en Casacuarán</label>
+                <input type="text"
+                       id="post-location"
+                       class="admin-form-input"
+                       placeholder="Ej. Jardín Principal, Domo, Calle Lázaro Cárdenas">
               </div>
 
               <div class="admin-form-group">
@@ -191,7 +209,7 @@
                 </div>
 
                 <p class="admin-hint">
-                  Si no subes foto ni video, la publicación se mostrará limpia en la sección de avisos.
+                  Si subes foto o video, aparecerá en las tarjetas grandes; si no lleva foto y eliges Aviso o Convocatoria, aparecerá en «Avisos y Convocatorias»; si es Concluida sin foto, irá a la Bitácora Histórica.
                 </p>
               </div>
 
@@ -260,24 +278,46 @@
       <!-- 3. Tabla de Publicaciones Registradas en Línea -->
       <section class="admin-card" aria-labelledby="heading-registered">
         <div class="admin-card-head admin-head-flex">
-          <h2 id="heading-registered" class="admin-section-title">Publicaciones Registradas</h2>
+          <h2 id="heading-registered" class="admin-section-title">Publicaciones y Bitácora Registradas</h2>
           <span id="posts-count-label" class="admin-count-badge">Cargando publicaciones...</span>
+        </div>
+
+        <div class="admin-table-toolbar">
+          <input type="search"
+                 id="admin-search-input"
+                 class="admin-form-input admin-toolbar-input"
+                 placeholder="Buscar actividad para editar o agregarle foto..."
+                 aria-label="Buscar publicación registrada">
+
+          <select id="admin-filter-cat" class="admin-form-select admin-toolbar-select" aria-label="Filtrar tabla por categoría">
+            <option value="todas">Todas las categorías</option>
+            <option value="infraestructura">Infraestructura y servicios</option>
+            <option value="mantenimiento">Medio ambiente y mantenimiento</option>
+            <option value="cultura">Cultura, tradiciones y festividades</option>
+            <option value="eventos">Eventos comunitarios y recaudación</option>
+            <option value="bienestar">Apoyo social y bienestar</option>
+            <option value="deporte">Deporte y recreación</option>
+            <option value="participacion">Participación y formación</option>
+            <option value="comunicacion">Comunicación y vinculación</option>
+          </select>
         </div>
 
         <div class="admin-table-scroll">
           <table class="ledger-table">
             <thead>
               <tr>
-                <th scope="col">Fecha</th>
+                <th scope="col">Fecha / Periodo</th>
                 <th scope="col">Título</th>
                 <th scope="col">Categoría</th>
-                <th scope="col">Estatus</th>
+                <th scope="col">Tipo</th>
                 <th scope="col" class="admin-table-actions">Acciones</th>
               </tr>
             </thead>
             <tbody id="admin-tbody"></tbody>
           </table>
         </div>
+
+        <div id="admin-pagination" class="ledger-footer-bar"></div>
       </section>
 
     </div>
